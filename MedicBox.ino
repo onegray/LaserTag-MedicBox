@@ -33,7 +33,6 @@
 #include "Device.h"
 
 #define	BTN_PIN   	3
-#define SOUND_PIN  	5
 
 static Device* device = NULL;
 static SmartMedic* medic = NULL;
@@ -50,6 +49,8 @@ void setup() {
 
 	Serial.begin(9600);
 	Serial.println("Ready...");
+	
+	device->showStatusReady();
 }
 
 void loop() {
@@ -69,9 +70,7 @@ void loop() {
 		
 	}
 
-	if(device!=NULL) {
-		device->showStatusText("Shot to start.");
-	}
+
 	
 	bool testMode = true;
 	if(testMode) {
@@ -86,7 +85,6 @@ void loop() {
 
 	}
 
-	//tone(SOUND_PIN, 1000, 150);
 	delay(10);
 	Sleep();
 }

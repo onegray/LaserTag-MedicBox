@@ -28,11 +28,14 @@
 #define DEVICE_H
 
 #include "Display.h"
+#include "Speaker.h"
 
 
 class Device
 {
 public:
+	
+	void showStatusReady();
 	
 	void showTimeInterval(int ms, const char* title = NULL);
 	
@@ -49,10 +52,10 @@ public:
 	void showResurrect();
 	
 	void showEmpty();
-
 	
 protected:
 	Display display;
+	Speaker speaker;
 };
 
 

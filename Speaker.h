@@ -1,8 +1,8 @@
 //
-//  Device.cpp
+//  Speaker.h
 //  MedicBox
 //
-//  Created by Sergey Nikitenko on 7/4/15.
+//  Created by Sergey Nikitenko on 7/27/15.
 //  Copyright (c) 2015, Sergey Nikitenko. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
@@ -24,55 +24,32 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#ifndef SPEAKER_H
+#define SPEAKER_H
 
-#include "Device.h"
-#include "Speaker.h"
+#include <Arduino.h>
 
-void Device::showStatusReady() {
-	display.clearScreen();
-	display.displayText(0, 2, "Device ready.");
-	speaker.playComputer();
-}
+class Speaker
+{
+public:
 
+	void playMelody();
 
-void Device::showTimeInterval(int ms, const char* title) {
+	void playBeep1();
+	void playBeep2();
+	void playBeep4();
+	void playBeep22();
 	
-	display.clearScreen();
-	if(title!=NULL) {
-		display.displayText(0, 0, title);
-	}
-	display.displayFloating(ms, 2);
+	void playComputer();
 
-}
+	void playRainbow1();
+	void playRainbow2();
+	void playRainbow3();
 
+	void playRandom1();
+	void playRandom2();
 
-void Device::showStatusText(const char* text) {
-	display.clearScreen();
-	display.displayText(0, 1, text);
-}
+	void testAll();
+};
 
-
-
-void Device::updateHealthNumber(int number) {
-	
-}
-
-void Device::updateResurectNumber(int number) {
-	
-}
-
-void Device::showHit() {
-	speaker.playRainbow2();
-}
-
-void Device::showKilled() {
-	
-}
-
-void Device::showResurrect() {
-	
-}
-
-void Device::showEmpty() {
-	speaker.playBeep2();
-}
+#endif
