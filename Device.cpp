@@ -28,21 +28,31 @@
 #include "Device.h"
 #include "Speaker.h"
 
-void Device::showStatusReady() {
+void Device::showDeviceReady() {
 	display.clearScreen();
-	display.displayText(0, 2, "Device ready.");
+	display.displayText(2, 2, "Device ready!");
 	speaker.playComputer();
+}
+
+void Device::showMenuMode(const char* modeTitle) {
+	display.clearScreen();
+	display.displayText(14, 0, "- Mode -");
+	display.displayText(0, 2, modeTitle);
+	speaker.playBeep1();
+}
+
+void Device::showMedicBoxReady() {
+	display.clearScreen();
+	speaker.playBeep4();
 }
 
 
 void Device::showTimeInterval(int ms, const char* title) {
-	
 	display.clearScreen();
 	if(title!=NULL) {
 		display.displayText(0, 0, title);
 	}
 	display.displayFloating(ms, 2);
-
 }
 
 
@@ -52,24 +62,33 @@ void Device::showStatusText(const char* text) {
 }
 
 
-
-void Device::updateHealthNumber(int number) {
-	
+void Device::showHealthNumber(int number) {
+	display.clearScreen();
+	display.displayText(0, 0, "Health left:");
+	display.displayInteger(number, 2);
 }
 
-void Device::updateResurectNumber(int number) {
-	
+void Device::showRespawnNumber(int number) {
+	display.clearScreen();
+	display.displayText(0, 0, "Resp number:");
+	display.displayInteger(number, 2);
 }
 
 void Device::showHit() {
-	speaker.playRainbow2();
+	display.clearScreen();
+	display.displayHit();
+	speaker.playRainbow3();
 }
 
-void Device::showKilled() {
-	
+void Device::showGameOver() {
+	display.clearScreen();
+	display.displayHit();
+	display.displayText(8, 3, "-----------");
+	display.displayText(8, 4, " GAME OVER ");
+	display.displayText(8, 5, "-----------");
 }
 
-void Device::showResurrect() {
+void Device::showRespawn() {
 	
 }
 

@@ -29,67 +29,100 @@
 #include <SPI.h>
 
 #include "mlt_core.h"
-#include "SmartMedic.h"
+#include "MedicBox.h"
+#include "ModeMenu.h"
 #include "Device.h"
 
 #define	BTN_PIN   	3
 
+#define IsValidCmd(cmd)         (cmd.command_type != MLT_CT_INVALID)
+#define IsChangeModeCmd(cmd)    (cmd.command_type == MLT_CT_SYSTEM && cmd.sys_cmd == MLT_SC_CHANGE_COLOR)
+#define IsResetCmd(cmd)         (cmd.command_type == MLT_CT_SYSTEM && cmd.sys_cmd == MLT_SC_NEW_GAME)
+#define IsEscCmd(cmd)           (cmd.command_type == MLT_CT_SYSTEM && cmd.sys_cmd == MLT_SC_ADMIN_KILL)
+
+
 static Device* device = NULL;
-static SmartMedic* medic = NULL;
+static ModeMenu* menu = NULL;
+static MedicBox* medic = NULL;
+
 
 void setup() {
-
-	mltSetup();
 
 	pinMode(BTN_PIN, INPUT);
 	digitalWrite(BTN_PIN, HIGH);
 
+	mltSetup();
+
 	device = new Device();
-	//medic = new SmartMedic(device);
+	//medic = new MedicBox(device);
 
 	Serial.begin(9600);
-	Serial.println("Ready...");
+	delay(50);
 	
-	device->showStatusReady();
+	device->showDeviceReady();
+	Serial.println("Ready...");
 }
 
 void loop() {
 	
 	mlt_command cmd = receiveCommand();
-	bool btnPressed = digitalRead(BTN_PIN) == LOW;
+	bool btnPressed = (digitalRead(BTN_PIN) == LOW);
 	
-	if ( medic!=NULL ) {
-
-		if (medic->processCommand(&cmd)) {
+	if ( IsChangeModeCmd(cmd) ) {
+		if(menu == NULL) {
+			menu = new ModeMenu(device);
+		} else {
+			menu->changeMode();
+		}
+		goto sleep;
+	}
+	
+	if (menu != NULL) {
 		
-			
+		if ( IsResetCmd(cmd) ) {
+			if(medic != NULL) {
+				delete medic;
+			}
+			medic = menu->instantiateMedicBox();
+			if (medic != NULL) {
+				medic->reset();
+			}
+			delete menu;
+			menu = NULL;
+		} else if ( IsEscCmd(cmd) ) {
+
 		} else if (btnPressed) {
-			sendSystemCommand(MLT_SC_NEW_GAME);
-			delay(100);
+			menu->changeModeParam();
 		}
-		
+		goto sleep;
 	}
-
-
 	
-	bool testMode = true;
-	if(testMode) {
+	if (medic != NULL) {
 
-		if(cmd.command_type == MLT_CT_SHOT) {
-			delay(300);
-			testStunTime();
-			delay(300);
-			sendSystemCommand(MLT_SC_NEW_GAME);
-			delay(1000);
+		if ( IsResetCmd(cmd) ) {
+			medic->reset();
+		} else if ( IsValidCmd(cmd) ) {
+			medic->processCommand(&cmd);
+		} else if (btnPressed) {
+			medic->processButton();
 		}
-
+		goto sleep;
 	}
 
-	delay(10);
+
+sleep:
+	delay(50);
 	Sleep();
+	
 }
 
 void Sleep() {
+	
+//	MCUSR &= ~(1<<WDRF); // Clear the reset flag
+//	WDTCSR |= (1<<WDCE) | (1<<WDE);
+//	WDTCSR = 1<<WDP0 | 1<<WDP3; // timeout prescaler for 8.0 seconds
+//	WDTCSR |= _BV(WDIE); // Enable the WD interrupt
+	
 	sleep_enable();
 	attachInterrupt(0, onWakeUp, LOW);
 	attachInterrupt(1, onWakeUp, LOW);
@@ -102,53 +135,13 @@ void Sleep() {
 	detachInterrupt(1);
 }
 
+
+//ISR(WDT_vect) {
+//	//Serial.println("WDT event");
+//}
+
 void onWakeUp() {
 }
-
-
-void testStunTime() {
-	
-	if(device!=NULL) {
-		device->showStatusText("Waiting for shot...");
-	}
-
-	sendShotCommand(0, MLT_ST_YELLOW, MLT_SHOT_DAMAGE_1);
-	
-	unsigned long startTime = micros();
-	unsigned long endTime = startTime;
-	
-	mlt_command cmd = receiveCommand();
-	while (cmd.command_type != MLT_CT_SHOT) {
-		endTime = micros();
-		cmd = receiveCommand();
-	}
-
-	long stunTime = endTime - startTime;
-	
-	if(device!=NULL) {
-		device->showTimeInterval(stunTime/1000, "Stun time:");
-	} else {
-		Serial.print("Stun time: ");
-		Serial.print(stunTime/1000000);
-		Serial.print(".");
-		Serial.println((stunTime%1000000)/1000);
-	}
-}
-
-
-void testImmortalTime() {
-
-	sendSystemCommand(MLT_SC_NEW_GAME);
-	delay(3000);
-
-	for(int i=0; i<4; i++) {
-		sendShotCommand(0, MLT_ST_YELLOW, MLT_SHOT_DAMAGE_1);
-		delay(1300);
-	}
-	
-}
-
-
 
 
 

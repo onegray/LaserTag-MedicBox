@@ -35,21 +35,25 @@ class Device
 {
 public:
 	
-	void showStatusReady();
+	void showDeviceReady();
+	
+	void showMenuMode(const char* modeTitle);
+
+	void showMedicBoxReady();
 	
 	void showTimeInterval(int ms, const char* title = NULL);
 	
 	void showStatusText(const char* text);
 	
-	void updateHealthNumber(int number);
+	void showHealthNumber(int number);
 
-	void updateResurectNumber(int number);
+	void showRespawnNumber(int number);
 	
 	void showHit();
 	
-	void showKilled();
+	void showGameOver();
 	
-	void showResurrect();
+	void showRespawn();
 	
 	void showEmpty();
 	
