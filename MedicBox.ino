@@ -27,11 +27,13 @@
 #include <Arduino.h>
 #include <avr/sleep.h>
 #include <SPI.h>
+#include <EEPROM.h>
 
 #include "mlt_core.h"
 #include "MedicBox.h"
 #include "ModeMenu.h"
 #include "Device.h"
+#include "ConfigurationProfile.h"
 
 #define	BTN_PIN   	3
 
@@ -44,7 +46,7 @@
 static Device* device = NULL;
 static ModeMenu* menu = NULL;
 static MedicBox* medic = NULL;
-
+static ConfigurationProfile* config = NULL;
 
 void setup() {
 
@@ -53,14 +55,19 @@ void setup() {
 
 	mltSetup();
 
+	config = new ConfigurationProfile();
 	device = new Device();
-	//medic = new MedicBox(device);
-
-	Serial.begin(9600);
-	delay(50);
 	
-	device->showDeviceReady();
-	Serial.println("Ready...");
+	medic = ModeMenu::instantiateMedicBox(device, config);
+	if (medic != NULL) {
+		medic->reset();
+	} else {
+		device->showDeviceReady();
+	}
+	
+	//Serial.begin(9600);
+	//Serial.println("Ready...");
+	delay(100);
 }
 
 void loop() {
@@ -70,7 +77,7 @@ void loop() {
 	
 	if ( IsChangeModeCmd(cmd) ) {
 		if(menu == NULL) {
-			menu = new ModeMenu(device);
+			menu = new ModeMenu(device, config);
 		} else {
 			menu->changeMode();
 		}
@@ -80,15 +87,18 @@ void loop() {
 	if (menu != NULL) {
 		
 		if ( IsResetCmd(cmd) ) {
+			
+			menu->saveConfig();
+			delete menu;
+			menu = NULL;
+			
 			if(medic != NULL) {
 				delete medic;
 			}
-			medic = menu->instantiateMedicBox();
+			medic = ModeMenu::instantiateMedicBox(device, config);
 			if (medic != NULL) {
 				medic->reset();
 			}
-			delete menu;
-			menu = NULL;
 		} else if ( IsEscCmd(cmd) ) {
 
 		} else if (btnPressed) {

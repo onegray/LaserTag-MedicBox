@@ -41,6 +41,7 @@ public:
 	
 	virtual void reset() {
 		device->showMedicBoxReady();
+		device->showStatusText("   - /--/ -   ");
 	}
 
 	virtual void processButton() {
