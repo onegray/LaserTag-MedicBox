@@ -46,6 +46,8 @@ public:
 
 	virtual void processButton() {
 		sendSystemCommand(MLT_SC_NEW_GAME);
+		device->showRespawn();
+		delay(220);
 	}
 
 	virtual void processCommand(mlt_command* cmd) {
@@ -68,11 +70,22 @@ public:
 		respawnCount = 0;
 		device->showMedicBoxReady();
 		device->showRespawnNumber(respawnCount);
+		device->preventSleep(1550);
 	}
 	
 	virtual void processButton() {
-		sendSystemCommand(MLT_SC_NEW_GAME);
-		respawnCount++;
+		static unsigned long lastRespawnTime = 0;
+		unsigned long currentTime = millis();
+		if(currentTime > lastRespawnTime + 300) {
+			sendSystemCommand(MLT_SC_NEW_GAME);
+			if(currentTime > lastRespawnTime + 1500) {
+				respawnCount++;
+				device->showRespawnNumber(respawnCount);
+			}
+			device->showRespawn();
+			lastRespawnTime = currentTime;
+			device->preventSleep(1550);
+		}
 	}
 	
 	virtual void processCommand(mlt_command* cmd) {
@@ -101,6 +114,8 @@ public:
 	virtual void processButton() {
 		if(health > 0) {
 			sendSystemCommand(MLT_SC_NEW_GAME);
+			device->showRespawn();
+			delay(250);
 		}
 	}
 	
@@ -168,6 +183,7 @@ public:
 		long stunTime = endTime - startTime;
 		
 		device->showTimeInterval(stunTime/1000, "Stun time:");
+		delay(500);
 	}
 	
 };

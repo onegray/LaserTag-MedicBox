@@ -28,6 +28,10 @@
 #include "Device.h"
 #include "Speaker.h"
 
+Device::Device() {
+	sleeplessEndingBound = 0;
+}
+
 void Device::showDeviceReady() {
 	display.clearScreen();
 	display.displayText(2, 2, "Device ready!");
@@ -52,7 +56,7 @@ void Device::showTimeInterval(int ms, const char* title) {
 	if(title!=NULL) {
 		display.displayText(0, 0, title);
 	}
-	display.displayFloating(ms, 2);
+	display.displayFloating(ms, 2); 
 }
 
 
@@ -86,12 +90,28 @@ void Device::showGameOver() {
 	display.displayText(8, 3, "-----------");
 	display.displayText(8, 4, " GAME OVER ");
 	display.displayText(8, 5, "-----------");
+	speaker.playMelody();
 }
 
 void Device::showRespawn() {
-	
+	//speaker.playBeep1();
 }
 
 void Device::showEmpty() {
 	speaker.playBeep2();
 }
+
+
+void Device::preventSleep(int duration) {
+	unsigned long endingBound = millis() + duration;
+	if(endingBound > sleeplessEndingBound) {
+		sleeplessEndingBound = endingBound;
+	}
+}
+
+bool Device::canSleep() {
+	return millis() > sleeplessEndingBound;
+}
+
+
+

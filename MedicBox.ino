@@ -57,7 +57,9 @@ void setup() {
 
 	config = new ConfigurationProfile();
 	device = new Device();
-	
+
+	delay(100);
+
 	medic = ModeMenu::instantiateMedicBox(device, config);
 	if (medic != NULL) {
 		medic->reset();
@@ -67,7 +69,7 @@ void setup() {
 	
 	//Serial.begin(9600);
 	//Serial.println("Ready...");
-	delay(100);
+	delay(10);
 }
 
 void loop() {
@@ -121,9 +123,9 @@ void loop() {
 
 
 sleep:
-	delay(50);
-	Sleep();
-	
+	if(device->canSleep()) {
+		Sleep();
+	}
 }
 
 void Sleep() {

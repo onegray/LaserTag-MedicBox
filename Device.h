@@ -35,6 +35,8 @@ class Device
 {
 public:
 	
+	Device();
+	
 	void showDeviceReady();
 	
 	void showMenuMode(const char* modeTitle);
@@ -57,9 +59,14 @@ public:
 	
 	void showEmpty();
 	
+	void preventSleep(int duration);
+	bool canSleep();
+	
 protected:
 	Display display;
 	Speaker speaker;
+	
+	unsigned long sleeplessEndingBound;
 };
 
 
