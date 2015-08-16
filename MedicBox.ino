@@ -29,13 +29,13 @@
 #include <SPI.h>
 #include <EEPROM.h>
 
+#include "Circuit.h"
 #include "mlt_core.h"
 #include "MedicBox.h"
 #include "ModeMenu.h"
 #include "Device.h"
 #include "ConfigurationProfile.h"
 
-#define	BTN_PIN   	3
 
 #define IsValidCmd(cmd)         (cmd.command_type != MLT_CT_INVALID)
 #define IsChangeModeCmd(cmd)    (cmd.command_type == MLT_CT_SYSTEM && cmd.sys_cmd == MLT_SC_CHANGE_COLOR)
@@ -51,9 +51,8 @@ static ConfigurationProfile* config = NULL;
 void setup() {
 
 	pinMode(BTN_PIN, INPUT);
-	digitalWrite(BTN_PIN, HIGH);
 
-	mltSetup();
+	mltSetup(IR_EMITTER_PIN, IR_SENSOR_PIN);
 
 	config = new ConfigurationProfile();
 	device = new Device();
@@ -130,11 +129,6 @@ sleep:
 
 void Sleep() {
 	
-//	MCUSR &= ~(1<<WDRF); // Clear the reset flag
-//	WDTCSR |= (1<<WDCE) | (1<<WDE);
-//	WDTCSR = 1<<WDP0 | 1<<WDP3; // timeout prescaler for 8.0 seconds
-//	WDTCSR |= _BV(WDIE); // Enable the WD interrupt
-	
 	sleep_enable();
 	attachInterrupt(0, onWakeUp, LOW);
 	attachInterrupt(1, onWakeUp, LOW);
@@ -147,10 +141,6 @@ void Sleep() {
 	detachInterrupt(1);
 }
 
-
-//ISR(WDT_vect) {
-//	//Serial.println("WDT event");
-//}
 
 void onWakeUp() {
 }

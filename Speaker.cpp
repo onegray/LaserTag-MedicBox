@@ -25,9 +25,7 @@
 //
 
 #include "Speaker.h"
-
-#define SOUND_PIN    5
-
+#include "Circuit.h"
 
 static const PROGMEM int pitches[128] {
 	8, 9, 9, 10, 10, 11, 12, 12, 13, 14, 15, 15, 16, 17, 18, 19, 21, 22, 23, 24, 26, 28, 29, 31, 33, 35, 37, 39, 41, 44, 46, 49, 52,

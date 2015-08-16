@@ -72,16 +72,21 @@
 #include "mlt_core.h"
 
 
-void mltSetup() {
-	pinMode(IR_EMITTER_PIN, OUTPUT);
-	pinMode(IR_SENSOR_PIN, INPUT);
+static uint8_t mlt_emitter_pin;
+static uint8_t mlt_sensor_pin;
+
+void mltSetup(uint8_t emitter_pin, uint8_t sensor_pin) {
+	mlt_emitter_pin = emitter_pin;
+	mlt_sensor_pin = sensor_pin;
+	pinMode(mlt_emitter_pin, OUTPUT);
+	pinMode(mlt_sensor_pin, INPUT);
 }
 
 void sendPulse(int cycles) {
 	for (int i=0; i<cycles; i++ ) {
-		digitalWrite(IR_EMITTER_PIN, HIGH);
+		digitalWrite(mlt_emitter_pin, HIGH);
 		delayMicroseconds(CARRIER_INTERVAL);
-		digitalWrite(IR_EMITTER_PIN, LOW);
+		digitalWrite(mlt_emitter_pin, LOW);
 		delayMicroseconds(CARRIER_INTERVAL);
 	}
 }
@@ -129,10 +134,10 @@ struct mlt_command receiveCommand() {
 	mlt_command cmd;
 	cmd.command_type = MLT_CT_INVALID;
 	
-	if( digitalRead(IR_SENSOR_PIN) == LOW ) {
+	if( digitalRead(mlt_sensor_pin) == LOW ) {
 		
 		unsigned long headerStartTime = micros();
-		while ( digitalRead(IR_SENSOR_PIN) == LOW );
+		while ( digitalRead(mlt_sensor_pin) == LOW );
 		unsigned long headerEndTime = micros();
 		
 		int headerLength = headerEndTime - headerStartTime;
@@ -144,8 +149,8 @@ struct mlt_command receiveCommand() {
 			
 			while (receivedPulseCount < MLT_MAX_DATA_LENGTH) {
 				int pulseLength = 0;
-				if( digitalRead(IR_SENSOR_PIN) == HIGH ) {
-					pulseLength = pulseIn(IR_SENSOR_PIN, LOW, PULSE_TIMEOUT);
+				if( digitalRead(mlt_sensor_pin) == HIGH ) {
+					pulseLength = pulseIn(mlt_sensor_pin, LOW, PULSE_TIMEOUT);
 				}
 				
 				if(pulseLength > MLT_BIT0_MIN_LENGTH && pulseLength < MLT_BIT0_MAX_LENGTH ) {

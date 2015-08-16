@@ -28,11 +28,6 @@
 #ifndef MLT_CORE_H
 #define MLT_CORE_H
 
-// Circuit settings
-#define	IR_EMITTER_PIN  4
-#define	IR_SENSOR_PIN   2
-
-
 enum mlt_command_type : char {
 	MLT_CT_INVALID = 0,
 	MLT_CT_SHOT = 1,
@@ -99,7 +94,7 @@ struct mlt_command {
 };
 
 
-void mltSetup();
+void mltSetup(uint8_t emitter_pin, uint8_t sensor_pin);
 
 struct mlt_command receiveCommand();
 
