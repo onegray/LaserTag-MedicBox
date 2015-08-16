@@ -26,10 +26,34 @@
 
 
 #include "Device.h"
+#include "Circuit.h"
+#include "Display.h"
 #include "Speaker.h"
+#include "mlt_core.h"
 
 Device::Device() {
 	sleeplessEndingBound = 0;
+	
+	pinMode(BTN_PIN, INPUT);
+	pinMode(BACKLIGHT_PIN, OUTPUT);
+	
+	mltSetup(IR_EMITTER_PIN, IR_SENSOR_PIN);
+}
+
+bool Device::isButtonPressed() {
+	return (digitalRead(BTN_PIN) == LOW);
+}
+
+mlt_command Device::receiveCommand() {
+	return ::receiveCommand();
+}
+
+void Device::sendNewGameCommand() {
+	::sendSystemCommand(MLT_SC_NEW_GAME);
+}
+
+void Device::sendShotCommand() {
+	::sendShotCommand(0, MLT_ST_YELLOW, MLT_SHOT_DAMAGE_1);
 }
 
 void Device::showDeviceReady() {
@@ -101,6 +125,9 @@ void Device::showEmpty() {
 	speaker.playBeep2();
 }
 
+void Device::turnBacklight(bool mode) {
+	digitalWrite(BACKLIGHT_PIN, mode ? HIGH : LOW);
+}
 
 void Device::preventSleep(int duration) {
 	unsigned long endingBound = millis() + duration;

@@ -28,9 +28,7 @@
 #ifndef SMART_MEDIC_H
 #define SMART_MEDIC_H
 
-#import "mlt_core.h"
 #import "Device.h"
-
 
 class MedicBox
 {
@@ -45,12 +43,17 @@ public:
 	}
 
 	virtual void processButton() {
-		sendSystemCommand(MLT_SC_NEW_GAME);
+		device->sendNewGameCommand();
 		device->showRespawn();
 		delay(220);
 	}
 
 	virtual void processCommand(mlt_command* cmd) {
+		if(cmd->command_type == MLT_CT_SHOT) {
+			device->showHit();
+			delay(100);
+			device->showStatusText("   - /--/ -   ");
+		}
 	}
 	
 protected:
@@ -77,7 +80,7 @@ public:
 		static unsigned long lastRespawnTime = 0;
 		unsigned long currentTime = millis();
 		if(currentTime > lastRespawnTime + 300) {
-			sendSystemCommand(MLT_SC_NEW_GAME);
+			device->sendNewGameCommand();
 			if(currentTime > lastRespawnTime + 1500) {
 				respawnCount++;
 				device->showRespawnNumber(respawnCount);
@@ -156,7 +159,7 @@ public:
 	}
 	
 	virtual void processButton() {
-		sendSystemCommand(MLT_SC_NEW_GAME);
+		device->sendNewGameCommand();
 	}
 	
 	virtual void processCommand(mlt_command* cmd) {
@@ -169,15 +172,15 @@ public:
 		device->showStatusText("Waiting for shot...");
 		delay(10);
 		
-		sendShotCommand(0, MLT_ST_YELLOW, MLT_SHOT_DAMAGE_1);
+		device->sendShotCommand();
 		
 		unsigned long startTime = micros();
 		unsigned long endTime = startTime;
 		
-		mlt_command cmd = receiveCommand();
+		mlt_command cmd = device->receiveCommand();
 		while (cmd.command_type != MLT_CT_SHOT) {
 			endTime = micros();
-			cmd = receiveCommand();
+			cmd = device->receiveCommand();
 		}
 		
 		long stunTime = endTime - startTime;
@@ -204,7 +207,7 @@ public:
 	}
 	
 	virtual void processButton() {
-		sendSystemCommand(MLT_SC_NEW_GAME);
+		device->sendNewGameCommand();
 	}
 	
 	virtual void processCommand(mlt_command* cmd) {
@@ -217,7 +220,7 @@ public:
 	void startTest() {
 		delay(300);
 		for(int i=0; i<4; i++) {
-			sendShotCommand(0, MLT_ST_YELLOW, MLT_SHOT_DAMAGE_1);
+			device->sendShotCommand();
 			delay(invulnerabilityTime);
 		}
 		device->showStatusText("Done.                ");

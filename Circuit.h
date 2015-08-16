@@ -91,5 +91,7 @@ Pin3       |
  Pin11 - SDIN
  Pin13 - SCLK */
 
+#define BACKLIGHT_PIN	6   // Output
+
 
 #endif

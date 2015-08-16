@@ -57,6 +57,7 @@ public:
 		device = aDevice;
 		config = aConfig;
 		mode = (ModeType)config->getMenuMode();
+		backlight = config->getBacklightMode();
 		device->showMenuMode(getModeTitle(mode));
 	}
 
@@ -69,8 +70,14 @@ public:
 		
 	}
 
+	void changeBacklight() {
+		backlight = ((uint8_t)backlight+1)%2; // "backlight = !backlight" does not work?
+		device->turnBacklight(backlight);
+	}
+	
 	void saveConfig() {
 		config->saveMenuMode(mode);
+		config->saveBacklightMode(backlight);
 	}
 
 	
@@ -137,6 +144,7 @@ protected:
 	Device* device;
 	ConfigurationProfile* config;
 	ModeType mode;
+	bool backlight;
 };
 
 

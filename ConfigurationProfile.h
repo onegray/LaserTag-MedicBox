@@ -34,6 +34,7 @@
 struct EEPROM_DATA {
 	uint8_t menuMode;
 	uint8_t submenuMode;
+	bool backlightMode;
 	int menuParam;
 };
 
@@ -63,6 +64,15 @@ public:
 	void saveSubmenuMode(uint8_t mode) {
 		dataCache.submenuMode = mode;
 		writeData(&dataCache.submenuMode, sizeof(dataCache.submenuMode), EEPROM_ADDR(submenuMode));
+	}
+
+	bool getBacklightMode() {
+		return dataCache.backlightMode;
+	}
+	
+	void saveBacklightMode(bool mode) {
+		dataCache.backlightMode = mode;
+		writeData(&dataCache.backlightMode, sizeof(dataCache.backlightMode), EEPROM_ADDR(backlightMode));
 	}
 
 private:

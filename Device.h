@@ -29,6 +29,7 @@
 
 #include "Display.h"
 #include "Speaker.h"
+#import "mlt_core.h"
 
 
 class Device
@@ -37,6 +38,15 @@ public:
 	
 	Device();
 	
+	bool isButtonPressed();
+
+	mlt_command receiveCommand();
+
+	void sendNewGameCommand();
+	
+	void sendShotCommand();
+	
+
 	void showDeviceReady();
 	
 	void showMenuMode(const char* modeTitle);
@@ -58,7 +68,9 @@ public:
 	void showRespawn();
 	
 	void showEmpty();
-	
+
+	void turnBacklight(bool mode);
+
 	void preventSleep(int duration);
 	bool canSleep();
 	

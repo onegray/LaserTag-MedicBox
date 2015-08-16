@@ -50,14 +50,15 @@ static ConfigurationProfile* config = NULL;
 
 void setup() {
 
-	pinMode(BTN_PIN, INPUT);
-
-	mltSetup(IR_EMITTER_PIN, IR_SENSOR_PIN);
-
 	config = new ConfigurationProfile();
 	device = new Device();
 
 	delay(100);
+	
+	if(config->getBacklightMode()) {
+		device->turnBacklight(true);
+		delay(50);
+	}	
 
 	medic = ModeMenu::instantiateMedicBox(device, config);
 	if (medic != NULL) {
@@ -73,8 +74,8 @@ void setup() {
 
 void loop() {
 	
-	mlt_command cmd = receiveCommand();
-	bool btnPressed = (digitalRead(BTN_PIN) == LOW);
+	mlt_command cmd = device->receiveCommand();
+	bool btnPressed = device->isButtonPressed();
 	
 	if ( IsChangeModeCmd(cmd) ) {
 		if(menu == NULL) {
@@ -103,7 +104,8 @@ void loop() {
 		} else if ( IsEscCmd(cmd) ) {
 
 		} else if (btnPressed) {
-			menu->changeModeParam();
+			menu->changeBacklight();
+			delay(300);
 		}
 		goto sleep;
 	}
