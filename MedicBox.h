@@ -28,7 +28,9 @@
 #ifndef SMART_MEDIC_H
 #define SMART_MEDIC_H
 
-#import "Device.h"
+#include "mlt_core.h"
+
+class Device; // Not used here
 
 class MedicBox
 {
@@ -38,199 +40,42 @@ public:
 	}
 	
 	virtual void reset() {
-		device->showMedicBoxReady();
-		device->showStatusText("   - /--/ -   ");
 	}
 
 	virtual void processButton() {
-		device->sendNewGameCommand();
-		device->showRespawn();
-		delay(220);
 	}
 
 	virtual void processCommand(mlt_command* cmd) {
-		if(cmd->command_type == MLT_CT_SHOT) {
-			device->showHit();
-			delay(100);
-			device->showStatusText("   - /--/ -   ");
+		if (cmd->command_type == MLT_CT_SHOT) {
+			
+			if (cmd->shot_data.team_color == MLT_ST_RED) {
+				// TODO: flash red led
+			}
+
+			if (cmd->shot_data.team_color == MLT_ST_BLUE) {
+				// TODO: flash blue led
+			}
+
+			playSound();
 		}
+	}
+	
+	void playSound() {
+		for(int k = 0; k<3; k++) {
+			for(int i=0; i<10; i++) {
+				tone(SOUND_PIN, 200+i*40 + k*100);
+				delay(14);
+			}
+			for(int i=10; i>0; i--) {
+				tone(SOUND_PIN, 200+i*40);
+				delay(14-k);
+			}
+		}
+		noTone(SOUND_PIN);
 	}
 	
 protected:
 	Device* device;
 };
-
-
-class StatisticMedicBox : public MedicBox
-{
-public:
-	
-	StatisticMedicBox(Device* aDevice)
-	: MedicBox(aDevice) {
-	}
-	
-	virtual void reset() {
-		respawnCount = 0;
-		device->showMedicBoxReady();
-		device->showRespawnNumber(respawnCount);
-		device->preventSleep(1550);
-	}
-	
-	virtual void processButton() {
-		static unsigned long lastRespawnTime = 0;
-		unsigned long currentTime = millis();
-		if(currentTime > lastRespawnTime + 300) {
-			device->sendNewGameCommand();
-			if(currentTime > lastRespawnTime + 1500) {
-				respawnCount++;
-				device->showRespawnNumber(respawnCount);
-			}
-			device->showRespawn();
-			lastRespawnTime = currentTime;
-			device->preventSleep(1550);
-		}
-	}
-	
-	virtual void processCommand(mlt_command* cmd) {
-	}
-	
-protected:
-	int respawnCount;
-};
-
-
-class AliveMedicBox : public MedicBox
-{
-public:
-	
-	AliveMedicBox(Device* aDevice, int healthParam)
-	: MedicBox(aDevice) {
-		health = maxHealth = healthParam;
-	}
-
-	virtual void reset() {
-		health = maxHealth;
-		device->showMedicBoxReady();
-		device->showHealthNumber(health);
-	}
-	
-	virtual void processButton() {
-		if(health > 0) {
-			sendSystemCommand(MLT_SC_NEW_GAME);
-			device->showRespawn();
-			delay(250);
-		}
-	}
-	
-	virtual void processCommand(mlt_command* cmd) {
-		if(cmd->command_type == MLT_CT_SHOT) {
-			if (health > 0) {
-				health--;
-
-				device->showHit();
-				delay(300);
-				
-				if(health > 0) {
-					device->showHealthNumber(health);
-				} else {
-					device->showGameOver();
-				}
-			}
-		}
-	}
-	
-protected:
-	int health;
-	int maxHealth;
-};
-
-
-class StunTimeTest : public MedicBox
-{
-public:
-	
-	StunTimeTest(Device* aDevice)
-	: MedicBox(aDevice) {
-	}
-	
-	virtual void reset() {
-		device->showMedicBoxReady();
-		device->showStatusText("Shot to start");
-	}
-	
-	virtual void processButton() {
-		device->sendNewGameCommand();
-	}
-	
-	virtual void processCommand(mlt_command* cmd) {
-		if(cmd->command_type == MLT_CT_SHOT) {
-			startTest();
-		}
-	}
-
-	void startTest() {
-		device->showStatusText("Waiting for shot...");
-		delay(10);
-		
-		device->sendShotCommand();
-		
-		unsigned long startTime = micros();
-		unsigned long endTime = startTime;
-		
-		mlt_command cmd = device->receiveCommand();
-		while (cmd.command_type != MLT_CT_SHOT) {
-			endTime = micros();
-			cmd = device->receiveCommand();
-		}
-		
-		long stunTime = endTime - startTime;
-		
-		device->showTimeInterval(stunTime/1000, "Stun time:");
-		delay(500);
-	}
-	
-};
-
-
-class InvulnerabilityTimeTest : public MedicBox
-{
-public:
-	
-	InvulnerabilityTimeTest(Device* aDevice, int invulnerabilityTime)
-	: MedicBox(aDevice) {
-		this->invulnerabilityTime = invulnerabilityTime;
-	}
-	
-	virtual void reset() {
-		device->showMedicBoxReady();
-		device->showStatusText("Shot to start");
-	}
-	
-	virtual void processButton() {
-		device->sendNewGameCommand();
-	}
-	
-	virtual void processCommand(mlt_command* cmd) {
-		if(cmd->command_type == MLT_CT_SHOT) {
-			device->showStatusText("Shooting 4 times ...");
-			startTest();
-		}
-	}
-	
-	void startTest() {
-		delay(300);
-		for(int i=0; i<4; i++) {
-			device->sendShotCommand();
-			delay(invulnerabilityTime);
-		}
-		device->showStatusText("Done.                ");
-		delay(1000);
-		device->showStatusText("Shot to start");
-	}
-	
-protected:
-	int invulnerabilityTime;
-};
-
 
 #endif

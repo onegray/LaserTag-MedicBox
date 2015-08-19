@@ -26,107 +26,32 @@
 
 #include <Arduino.h>
 #include <avr/sleep.h>
-#include <SPI.h>
-#include <EEPROM.h>
 
 #include "Circuit.h"
 #include "mlt_core.h"
 #include "MedicBox.h"
-#include "ModeMenu.h"
-#include "Device.h"
-#include "ConfigurationProfile.h"
 
 
-#define IsValidCmd(cmd)         (cmd.command_type != MLT_CT_INVALID)
-#define IsChangeModeCmd(cmd)    (cmd.command_type == MLT_CT_SYSTEM && cmd.sys_cmd == MLT_SC_CHANGE_COLOR)
-#define IsResetCmd(cmd)         (cmd.command_type == MLT_CT_SYSTEM && cmd.sys_cmd == MLT_SC_NEW_GAME)
-#define IsEscCmd(cmd)           (cmd.command_type == MLT_CT_SYSTEM && cmd.sys_cmd == MLT_SC_ADMIN_KILL)
-
-
-static Device* device = NULL;
-static ModeMenu* menu = NULL;
 static MedicBox* medic = NULL;
-static ConfigurationProfile* config = NULL;
 
 void setup() {
 
-	config = new ConfigurationProfile();
-	device = new Device();
+	pinMode(SOUND_PIN, OUTPUT);
 
+	mltSetup(0, IR_SENSOR_PIN);
+
+	medic = new MedicBox(NULL);
+	
 	delay(100);
-	
-	if(config->getBacklightMode()) {
-		device->turnBacklight(true);
-		delay(50);
-	}	
-
-	medic = ModeMenu::instantiateMedicBox(device, config);
-	if (medic != NULL) {
-		medic->reset();
-	} else {
-		device->showDeviceReady();
-	}
-	
-	//Serial.begin(9600);
-	//Serial.println("Ready...");
-	delay(10);
 }
 
 void loop() {
 	
-	mlt_command cmd = device->receiveCommand();
-	bool btnPressed = device->isButtonPressed();
+	mlt_command cmd = receiveCommand();
 	
-	if ( IsChangeModeCmd(cmd) ) {
-		if(menu == NULL) {
-			menu = new ModeMenu(device, config);
-		} else {
-			menu->changeMode();
-		}
-		goto sleep;
-	}
-	
-	if (menu != NULL) {
-		
-		if ( IsResetCmd(cmd) ) {
-			
-			menu->saveConfig();
-			delete menu;
-			menu = NULL;
-			
-			if(medic != NULL) {
-				delete medic;
-			}
-			medic = ModeMenu::instantiateMedicBox(device, config);
-			if (medic != NULL) {
-				medic->reset();
-			}
-		} else if ( IsEscCmd(cmd) ) {
+	medic->processCommand(&cmd);
 
-		} else if (btnPressed) {
-			menu->changeBacklight();
-			delay(300);
-		}
-		goto sleep;
-	}
-	
-	if (medic != NULL) {
-
-		if ( IsResetCmd(cmd) ) {
-			medic->reset();
-		} else if ( IsValidCmd(cmd) ) {
-			medic->processCommand(&cmd);
-		} else if (btnPressed) {
-			medic->processButton();
-		}
-		goto sleep;
-	}
-
-
-sleep:
-	if(device->canSleep()) {
-		Sleep();
-	}
+	Sleep();
 }
 
 void Sleep() {

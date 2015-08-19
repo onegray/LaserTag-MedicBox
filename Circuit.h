@@ -44,38 +44,6 @@ Pin2       |   | | |   |
                  -     */
 
 
-/* IR Emitter */
-#define	IR_EMITTER_PIN  4	// Output
- 
-/*
-Vcc    22R   led
- + ---/\/\--->|----+
-                   |
-Vcc    22R   led   |
- + ---/\/\--->|----+
-                   |
-            BD875  |k
-              b__|/
-Pin4  470R    |  |\
- o ---/\/\----+    |e
-                  _|_
-                   -   */
-
-
-/* Push button */
-#define	BTN_PIN         3	// Pulled-up input, active is "LOW"
-
-/*
-Vcc   1k
- + --/\/\--+
-           |
-Pin3       |
- o --------+
-           |
-            /  Btn
-          _|_
-           -          */
-
 
 
 /* Speaker */
@@ -83,15 +51,6 @@ Pin3       |
 
 
 
-/* Nokia 5110 LCD */
-/* Pin mapping (defined in PCD8544_SPI.h):
- Pin8  - DC
- Pin9  - Reset
- Pin10 - CSE
- Pin11 - SDIN
- Pin13 - SCLK */
-
-#define BACKLIGHT_PIN	6   // Output
 
 
 #endif
