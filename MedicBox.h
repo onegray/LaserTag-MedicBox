@@ -78,16 +78,21 @@ public:
 	
 	virtual void processButton() {
 		static unsigned long lastRespawnTime = 0;
+		static unsigned long lastRegisteredTime = 0;
 		unsigned long currentTime = millis();
+
 		if(currentTime > lastRespawnTime + 300) {
+			lastRespawnTime = currentTime;
 			device->sendNewGameCommand();
-			if(currentTime > lastRespawnTime + 1500) {
+			device->showRespawn();
+			device->preventSleep(350);
+			
+			if(currentTime > lastRegisteredTime + 1500) {
+				lastRegisteredTime = currentTime;
 				respawnCount++;
 				device->showRespawnNumber(respawnCount);
+				device->preventSleep(1550);
 			}
-			device->showRespawn();
-			lastRespawnTime = currentTime;
-			device->preventSleep(1550);
 		}
 	}
 	
