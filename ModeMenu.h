@@ -71,7 +71,7 @@ public:
 	}
 
 	void changeBacklight() {
-		backlight = ((uint8_t)backlight+1)%2; // "backlight = !backlight" does not work?
+		backlight = (backlight+1) & 0x01;
 		device->turnBacklight(backlight);
 	}
 	
