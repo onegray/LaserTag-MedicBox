@@ -83,6 +83,13 @@ void Device::showTimeInterval(int ms, const char* title) {
 	display.displayFloating(ms, 2); 
 }
 
+void Device::showTimerNumber(int number, const char* title) {
+	display.clearScreen();
+	if(title!=NULL) {
+		display.displayText(0, 0, title);
+	}
+	display.displayInteger(number, 2);
+}
 
 void Device::showStatusText(const char* text) {
 	display.clearScreen();
@@ -124,6 +131,15 @@ void Device::showRespawn() {
 void Device::showEmpty() {
 	speaker.playBeep2();
 }
+
+void Device::playConfirmBeep() {
+	speaker.playBeep1();
+}
+
+void Device::playWarningBeep() {
+	speaker.playBeep2();
+}
+
 
 void Device::turnBacklight(bool mode) {
 	digitalWrite(BACKLIGHT_PIN, mode ? HIGH : LOW);

@@ -56,6 +56,9 @@ public:
 		}
 	}
 	
+	virtual void updateTime() {
+	}
+	
 protected:
 	Device* device;
 };
@@ -149,6 +152,94 @@ protected:
 	int maxHealth;
 };
 
+
+class TempMedicBox : public MedicBox
+{
+public:
+	
+	TempMedicBox(Device* aDevice, int aliveTime, int stunTime)
+	: MedicBox(aDevice) {
+		this->aliveTime = aliveTime;
+		this->stunTime = stunTime < 10*60 ? stunTime : 10*60-1;
+	}
+	
+	virtual void reset() {
+		alive = false;
+		startTime = millis() / 1000;
+		elapsedTime = 0;
+		device->showMedicBoxReady();
+		updateTime();
+		device->preventSleep(2000);
+	}
+	
+	virtual void processButton() {
+		if(alive) {
+			sendSystemCommand(MLT_SC_NEW_GAME);
+			delay(300);
+		}
+		updateTime();
+	}
+	
+	virtual void processCommand(mlt_command* cmd) {
+	}
+
+	virtual void updateTime() {
+		unsigned long currentTime = millis() / 1000;
+		int delta = currentTime - startTime;
+		if( elapsedTime != delta ) {
+			elapsedTime = delta;
+			int timeLeft = (alive ? aliveTime : stunTime) - elapsedTime;
+			if(timeLeft < 0) {
+				alive = !alive;
+				startTime = currentTime;
+				timeLeft = (alive ? aliveTime : stunTime);
+				device->playWarningBeep();
+			}
+			if(alive) {
+				if(timeLeft < 60) {
+					device->showTimerNumber(timeLeft, " Ready! ");
+					device->playConfirmBeep();
+				} else {
+					device->showStatusText(" Ready! ");
+				}
+			} else {
+				device->showTimeInterval(((long)timeLeft*100/60)*10, " Waiting... ");
+			}
+			device->preventSleep(2000);
+		}
+	}
+
+protected:
+	int aliveTime;
+	int stunTime;
+	bool alive;
+	int elapsedTime;
+	unsigned long startTime;
+};
+
+
+class TempAliveMedicBox : public TempMedicBox
+{
+public:
+	TempAliveMedicBox(Device* aDevice, int stunTime)
+	: TempMedicBox(aDevice, 9999, stunTime) {
+	}
+
+	virtual void reset() {
+		TempMedicBox::reset();
+		alive = true;
+		updateTime();
+	}
+	
+	virtual void processCommand(mlt_command* cmd) {
+		if(alive && cmd->command_type == MLT_CT_SHOT) {
+			alive = false;
+			startTime = millis() / 1000;
+			device->showHit();
+			updateTime();
+		}
+	}
+};
 
 class StunTimeTest : public MedicBox
 {

@@ -55,6 +55,8 @@ public:
 	
 	void showTimeInterval(int ms, const char* title = NULL);
 	
+	void showTimerNumber(int number, const char* title = NULL);
+	
 	void showStatusText(const char* text);
 	
 	void showHealthNumber(int number);
@@ -69,6 +71,10 @@ public:
 	
 	void showEmpty();
 
+	void playConfirmBeep();
+
+	void playWarningBeep();
+	
 	void turnBacklight(bool mode);
 
 	void preventSleep(int duration);

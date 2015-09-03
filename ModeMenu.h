@@ -36,6 +36,14 @@ enum ModeType : char {
 	ModeStatisticMedic,
 	ModeAliveMedic4,
 	ModeAliveMedic10,
+	
+	ModeTempMedic05_5,
+	ModeTempMedic1_5,
+	ModeTempMedic1_10,
+
+	ModeTempAliveMedic2,
+	ModeTempAliveMedic3,
+
 	ModeTestStunTime,
 	ModeTestInvulnerabilityTime1300,
 	ModeTestInvulnerabilityTime1310,
@@ -94,6 +102,21 @@ public:
 			case ModeAliveMedic10:
 				return new AliveMedicBox(device, 10);
 				
+				
+			case ModeTempMedic05_5:
+				return new TempMedicBox(device, 0.5*60, 5*60);
+			case ModeTempMedic1_5:
+				return new TempMedicBox(device, 1*60, 5*60);
+			case ModeTempMedic1_10:
+				return new TempMedicBox(device, 1*60, 10*60);
+
+				
+			case ModeTempAliveMedic2:
+				return new TempAliveMedicBox(device, 2*60);
+			case ModeTempAliveMedic3:
+				return new TempAliveMedicBox(device, 3*60);
+
+				
 			case ModeTestStunTime:
 				return new StunTimeTest(device);
 				
@@ -126,6 +149,13 @@ public:
 			
 			"Alive Medic   health 4",
 			"Alive Medic   health 10",
+			
+			"Temp Medic       0.5/5",
+			"Temp Medic       1/5",
+			"Temp Medic       1/10",
+
+			"Temp Medic      Alive/2",
+			"Temp Medic      Alive/3",
 			
 			"Test Stun Time",
 			"Test Invulnerability 1.3",

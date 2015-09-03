@@ -118,6 +118,8 @@ void loop() {
 			medic->processCommand(&cmd);
 		} else if (btnPressed) {
 			medic->processButton();
+		} else {
+			medic->updateTime();
 		}
 		goto sleep;
 	}
