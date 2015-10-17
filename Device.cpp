@@ -33,6 +33,7 @@
 
 Device::Device() {
 	sleeplessEndingBound = 0;
+	backlightMode = false;
 	
 	pinMode(BTN_PIN, INPUT);
 	pinMode(BACKLIGHT_PIN, OUTPUT);
@@ -112,7 +113,9 @@ void Device::showRespawnNumber(int number) {
 void Device::showHit() {
 	display.clearScreen();
 	display.displayHit();
+	turnBacklight(!backlightMode);
 	speaker.playRainbow3();
+	turnBacklight(!backlightMode);
 }
 
 void Device::showGameOver() {
@@ -142,6 +145,7 @@ void Device::playWarningBeep() {
 
 
 void Device::turnBacklight(bool mode) {
+	backlightMode = mode;
 	digitalWrite(BACKLIGHT_PIN, mode ? HIGH : LOW);
 }
 

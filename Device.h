@@ -85,6 +85,7 @@ protected:
 	Speaker speaker;
 	
 	unsigned long sleeplessEndingBound;
+	bool backlightMode;
 };
 
 
