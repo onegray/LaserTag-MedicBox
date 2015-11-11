@@ -28,7 +28,7 @@
 #ifndef SMART_MEDIC_H
 #define SMART_MEDIC_H
 
-#import "Device.h"
+#include "Device.h"
 
 class MedicBox
 {

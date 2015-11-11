@@ -29,7 +29,7 @@
 
 #include "Display.h"
 #include "Speaker.h"
-#import "mlt_core.h"
+#include "mlt_core.h"
 
 
 class Device
