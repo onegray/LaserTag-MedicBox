@@ -66,7 +66,7 @@
 #define MLT_CMD_DATA_LENGTH 	24
 #define MLT_MAX_DATA_LENGTH 	24
 
-#define PULSE_TIMEOUT	2000
+#define PULSE_TIMEOUT	4000
 
 #include <arduino.h>
 #include "mlt_core.h"
