@@ -49,7 +49,7 @@
 // The following is the default wiring configuration for an Atmega168/328 based Arduino:
 // PIN_DC    D8 
 // PIN_RESET D9 
-// PIN_SCE   D10 
+// PIN_SCE   D10 --  Not used in our version -- SergeyN
 // PIN_SDIN  D11 
 // PIN_SCLK  D13 
 
@@ -71,7 +71,8 @@
 						
 #define PIN_DC				0x01	// D8
 #define PIN_RESET			0x02	// D9
-#define PIN_CE				0x04	// D10
+//#define PIN_CE			0x04	// D10
+#define PIN_CE				0x0		// Do not need PIN_CE in our version -- SergeyN
 #define PINS_CE_DC			(PIN_DC | PIN_CE)
 
 // When DC is '1' the LCD expects data, when it is '0' it expects a command.

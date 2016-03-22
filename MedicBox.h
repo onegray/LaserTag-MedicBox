@@ -329,4 +329,62 @@ protected:
 };
 
 
+class DominationTube : public MedicBox
+{
+public:
+	DominationTube(Device* aDevice, int winTime)
+	: MedicBox(aDevice) {
+		this->winTime = winTime;
+	}
+
+	virtual void reset() {
+		startTime = millis() / 1000;
+		elapsedTime = 0;
+		currentColor = -1;
+		device->showMedicBoxReady();
+		//updateTime();
+		device->preventSleep(winTime + 100);
+	}
+	
+	virtual void processButton() {
+		updateTime();
+	}
+	
+	virtual void processCommand(mlt_command* cmd) {
+		if(cmd->command_type == MLT_CT_SHOT) {
+			int elapsedTime = currentColor == MLT_ST_RED ? elapsedTimeRed : elapsedTimeBlue;
+			if (elapsedTime < winTime) {
+				if(cmd->shot_data.team_color != currentColor) {
+					currentColor = cmd->shot_data.team_color;
+					
+					
+				}
+			}
+		}
+	}
+	
+	virtual void updateTime() {
+		unsigned long currentTime = millis() / 1000;
+		int delta = currentTime - startTime;
+		int elapsedTime = currentColor == MLT_ST_RED ? elapsedTimeRed : elapsedTimeBlue;
+
+		if( elapsedTime + delta >= winTime ) {
+
+			// Game Over
+			
+			device->playWarningBeep();
+		}
+	}
+
+	
+	
+protected:
+	int winTime;
+	int startTime;
+	int elapsedTimeRed;
+	int elapsedTimeBlue;
+	mlt_team_color currentColor;
+};
+
+
 #endif
