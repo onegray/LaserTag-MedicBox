@@ -37,6 +37,7 @@ enum ModeType : char {
 	ModeAliveMedic4,
 	ModeAliveMedic10,
 	
+	ModeTempMedic05_3,
 	ModeTempMedic05_5,
 	ModeTempMedic1_5,
 	ModeTempMedic1_10,
@@ -103,6 +104,8 @@ public:
 				return new AliveMedicBox(device, 10);
 				
 				
+			case ModeTempMedic05_3:
+				return new TempMedicBox(device, 0.5*60, 3*60);
 			case ModeTempMedic05_5:
 				return new TempMedicBox(device, 0.5*60, 5*60);
 			case ModeTempMedic1_5:
@@ -150,6 +153,7 @@ public:
 			"Alive Medic   health 4",
 			"Alive Medic   health 10",
 			
+			"Temp Medic       0.5/3",
 			"Temp Medic       0.5/5",
 			"Temp Medic       1/5",
 			"Temp Medic       1/10",
