@@ -67,8 +67,8 @@ void setup() {
 		device->showDeviceReady();
 	}
 	
-	//Serial.begin(9600);
-	//Serial.println("Ready...");
+	Serial.begin(9600);
+	Serial.println("Ready...");
 	delay(10);
 }
 

@@ -64,9 +64,9 @@
 
 #define MLT_SHOT_DATA_LENGTH	14
 #define MLT_CMD_DATA_LENGTH 	24
-#define MLT_MAX_DATA_LENGTH 	24
+#define MLT_MAX_DATA_LENGTH 	50
 
-#define PULSE_TIMEOUT	4000
+#define PULSE_TIMEOUT	5000
 
 #include <arduino.h>
 #include "mlt_core.h"
@@ -129,6 +129,18 @@ void printBits(const char* bitBuf, char count) {
 	Serial.println("");
 }
 
+void printBytes(const int* byteBuf, char count) {
+	Serial.print("Data: ");
+	for(char i=0; i<count; i++) {
+		if (i%8 == 0) {
+			Serial.print(" ");
+		}
+		Serial.print((int)byteBuf[i]);
+		Serial.print(" ");
+	}
+	Serial.println("");
+}
+
 struct mlt_command receiveCommand() {
 	
 	mlt_command cmd;
@@ -145,6 +157,7 @@ struct mlt_command receiveCommand() {
 		if ( headerLength > MLT_HEADER_MIN_LENGTH && headerLength < MLT_HEADER_MAX_LENGTH ) {
 			
 			char buf[MLT_MAX_DATA_LENGTH];
+			int buf2[MLT_MAX_DATA_LENGTH];
 			char receivedPulseCount = 0;
 			
 			while (receivedPulseCount < MLT_MAX_DATA_LENGTH) {
@@ -155,9 +168,11 @@ struct mlt_command receiveCommand() {
 				
 				if(pulseLength > MLT_BIT0_MIN_LENGTH && pulseLength < MLT_BIT0_MAX_LENGTH ) {
 					buf[receivedPulseCount] = 0;
+				            buf2[receivedPulseCount] = pulseLength;
 					receivedPulseCount++;
 				} else if(pulseLength > MLT_BIT1_MIN_LENGTH && pulseLength < MLT_BIT1_MAX_LENGTH ) {
 					buf[receivedPulseCount] = 1;
+				            buf2[receivedPulseCount] = pulseLength;
 					receivedPulseCount++;
 				} else if (pulseLength > MLT_HEADER_MIN_LENGTH && pulseLength < MLT_HEADER_MAX_LENGTH) {
 					receivedPulseCount = 0;
@@ -183,9 +198,10 @@ struct mlt_command receiveCommand() {
 				}
 			}
 			
-			//Serial.print("Header: ");
-			//Serial.println(headerLength);
-			//printBits(buf, receivedPulseCount);
+			Serial.print("Header: ");
+			Serial.println(headerLength);
+			printBytes(buf2, receivedPulseCount);
+			printBits(buf, receivedPulseCount);
 		}
 	}
 	
