@@ -38,6 +38,10 @@ Device::Device() {
 	pinMode(BTN_PIN, INPUT);
 	pinMode(BACKLIGHT_PIN, OUTPUT);
 	
+	pinMode(LED_RED_PIN, OUTPUT);
+	pinMode(LED_GREEN_PIN, OUTPUT);
+	pinMode(LED_BLUE_PIN, OUTPUT);
+	
 	mltSetup(IR_EMITTER_PIN, IR_SENSOR_PIN);
 }
 
@@ -148,6 +152,20 @@ void Device::turnBacklight(bool mode) {
 	backlightMode = mode;
 	digitalWrite(BACKLIGHT_PIN, mode ? HIGH : LOW);
 }
+
+void Device::setRed(int red) {
+	analogWrite(LED_RED_PIN, red);
+	analogWrite(LED_GREEN_PIN, 0);
+	analogWrite(LED_BLUE_PIN, 0);
+}
+
+
+void Device::setBlue(int blue) {
+	analogWrite(LED_RED_PIN, 0);
+	analogWrite(LED_GREEN_PIN, 0);
+	analogWrite(LED_BLUE_PIN, blue);
+}
+
 
 void Device::preventSleep(int duration) {
 	unsigned long endingBound = millis() + duration;

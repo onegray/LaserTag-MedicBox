@@ -76,6 +76,9 @@ public:
 	void playWarningBeep();
 	
 	void turnBacklight(bool mode);
+	
+	void setRed(int red);
+	void setBlue(int blue);
 
 	void preventSleep(int duration);
 	bool canSleep();

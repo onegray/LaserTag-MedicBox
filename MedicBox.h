@@ -338,51 +338,96 @@ public:
 	}
 
 	virtual void reset() {
-		startTime = millis() / 1000;
-		elapsedTime = 0;
-		currentColor = -1;
+		isGameOver = false;
+		lastSwitchTime = millis() / 1000;
+		savedTimeRed = 0;
+		savedTimeBlue = 0;
+		currentColor = (mlt_team_color)-1;
+		device->setRed(0);
 		device->showMedicBoxReady();
-		//updateTime();
-		device->preventSleep(winTime + 100);
+		device->preventSleep(1000);
 	}
 	
 	virtual void processButton() {
-		updateTime();
 	}
 	
 	virtual void processCommand(mlt_command* cmd) {
 		if(cmd->command_type == MLT_CT_SHOT) {
-			int elapsedTime = currentColor == MLT_ST_RED ? elapsedTimeRed : elapsedTimeBlue;
-			if (elapsedTime < winTime) {
-				if(cmd->shot_data.team_color != currentColor) {
-					currentColor = cmd->shot_data.team_color;
-					
-					
+			if(!isGameOver && cmd->shot_data.team_color != currentColor) {
+
+				int currentTime = millis() / 1000;
+				int delta = currentTime - lastSwitchTime;
+				int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
+				lastSwitchTime = currentTime;
+				
+				if (currentColor == MLT_ST_RED) {
+					savedTimeRed += delta;
+				} else if (currentColor == MLT_ST_BLUE) {
+					savedTimeBlue += delta;
 				}
+				
+				currentColor = cmd->shot_data.team_color;
+				
+				if (currentColor == MLT_ST_RED) {
+					device->setRed(127);
+				} else {
+					device->setBlue(127);
+				}
+				
+				updateDisplay();
+				device->playConfirmBeep();
 			}
 		}
 	}
 	
 	virtual void updateTime() {
-		unsigned long currentTime = millis() / 1000;
-		int delta = currentTime - startTime;
-		int elapsedTime = currentColor == MLT_ST_RED ? elapsedTimeRed : elapsedTimeBlue;
+		static int oldTime = 0;
+		int currentTime = millis() / 1000;
 
-		if( elapsedTime + delta >= winTime ) {
+		if (oldTime != currentTime) {
+			oldTime = currentTime;
 
-			// Game Over
+			int delta = currentTime - lastSwitchTime;
+			int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
 			
-			device->playWarningBeep();
+			if ( savedTime + delta < winTime ) {
+
+				updateDisplay();
+				
+			} else {
+				
+				if (!isGameOver) {
+					isGameOver = true;
+					device->playWarningBeep();
+				}
+				
+				int v = (currentTime % 2 == 0) ? 0 : 127;
+				if (currentColor == MLT_ST_RED) {
+					device->setRed(v);
+				} else {
+					device->setBlue(v);
+				}
+			}
+			device->preventSleep(1000);
 		}
 	}
 
-	
+	void updateDisplay() {
+		int currentTime = millis() / 1000;
+		int delta = currentTime - lastSwitchTime;
+		int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
+		
+		int timeValue = ((long)(savedTime + delta)*100/60)*10;
+		const char* text = currentColor == MLT_ST_RED ? "  Red  " : "  Blue  ";
+		device->showTimeInterval(timeValue, text);
+	}
 	
 protected:
 	int winTime;
-	int startTime;
-	int elapsedTimeRed;
-	int elapsedTimeBlue;
+	int lastSwitchTime;
+	int savedTimeRed;
+	int savedTimeBlue;
+	bool isGameOver;
 	mlt_team_color currentColor;
 };
 

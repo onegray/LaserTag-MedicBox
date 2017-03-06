@@ -60,7 +60,9 @@ void setup() {
 		delay(50);
 	}	
 
-	medic = ModeMenu::instantiateMedicBox(device, config);
+	//medic = ModeMenu::instantiateMedicBox(device, config);
+	medic = new DominationTube(device, 60);
+	
 	if (medic != NULL) {
 		medic->reset();
 	} else {
@@ -75,7 +77,7 @@ void setup() {
 void loop() {
 	
 	mlt_command cmd = device->receiveCommand();
-	bool btnPressed = device->isButtonPressed();
+	bool btnPressed = 0; //device->isButtonPressed();
 	
 	if ( IsChangeModeCmd(cmd) ) {
 		if(menu == NULL) {
