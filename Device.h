@@ -75,10 +75,13 @@ public:
 
 	void playWarningBeep();
 	
+	void playGameOver();
+	
 	void turnBacklight(bool mode);
 	
-	void setRed(int red);
-	void setBlue(int blue);
+	void setRed(bool on);
+	void setBlue(bool on);
+	void setWhite(bool on);
 
 	void preventSleep(int duration);
 	bool canSleep();

@@ -66,13 +66,13 @@
 // Px7 is the MSB pin of the port, which in turn is represented by the hexadecimal number 0x80.
 
 // This is the port where the LCD is connected.
-#define PCD8544_PORT		PORTB
+#define PCD8544_PORT			PORTB
 #define PCD8544_DDR			DDRB	// Should be DDRx, x = port name (B, C, D, etc.)
 						
 #define PIN_DC				0x01	// D8
 #define PIN_RESET			0x02	// D9
 //#define PIN_CE			0x04	// D10
-#define PIN_CE				0x0		// Do not need PIN_CE in our version -- SergeyN
+#define PIN_CE				0x00	// Do not need PIN_CE in our version -- SergeyN
 #define PINS_CE_DC			(PIN_DC | PIN_CE)
 
 // When DC is '1' the LCD expects data, when it is '0' it expects a command.

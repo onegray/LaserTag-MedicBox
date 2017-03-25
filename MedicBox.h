@@ -343,8 +343,9 @@ public:
 		savedTimeRed = 0;
 		savedTimeBlue = 0;
 		currentColor = (mlt_team_color)-1;
-		device->setRed(0);
+		device->setWhite(true);
 		device->showMedicBoxReady();
+		device->showStatusText("Shot to start");
 		device->preventSleep(1000);
 	}
 	
@@ -369,9 +370,9 @@ public:
 				currentColor = cmd->shot_data.team_color;
 				
 				if (currentColor == MLT_ST_RED) {
-					device->setRed(127);
+					device->setRed(true);
 				} else {
-					device->setBlue(127);
+					device->setBlue(true);
 				}
 				
 				updateDisplay();
@@ -384,7 +385,7 @@ public:
 		static int oldTime = 0;
 		int currentTime = millis() / 1000;
 
-		if (oldTime != currentTime) {
+		if ( oldTime != currentTime && (int)currentColor != -1 ) {
 			oldTime = currentTime;
 
 			int delta = currentTime - lastSwitchTime;
@@ -398,14 +399,15 @@ public:
 				
 				if (!isGameOver) {
 					isGameOver = true;
-					device->playWarningBeep();
+					device->playGameOver();
+					device->showGameOver();
 				}
 				
-				int v = (currentTime % 2 == 0) ? 0 : 127;
+				bool on = (currentTime % 2 == 0);
 				if (currentColor == MLT_ST_RED) {
-					device->setRed(v);
+					device->setRed(on);
 				} else {
-					device->setBlue(v);
+					device->setBlue(on);
 				}
 			}
 			device->preventSleep(1000);

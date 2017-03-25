@@ -61,16 +61,16 @@ void setup() {
 	}	
 
 	//medic = ModeMenu::instantiateMedicBox(device, config);
-	medic = new DominationTube(device, 60);
-	
+	medic = new DominationTube(device, 8*60);
+
 	if (medic != NULL) {
 		medic->reset();
 	} else {
 		device->showDeviceReady();
 	}
 	
-	//Serial.begin(9600);
-	//Serial.println("Ready...");
+//	Serial.begin(9600);
+//	Serial.println("Ready...");
 	delay(10);
 }
 
@@ -129,7 +129,7 @@ void loop() {
 
 sleep:
 	if(device->canSleep()) {
-		Sleep();
+	//	Sleep();
 	}
 }
 
