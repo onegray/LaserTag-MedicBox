@@ -342,6 +342,8 @@ public:
 		lastSwitchTime = millis() / 1000;
 		savedTimeRed = 0;
 		savedTimeBlue = 0;
+		savedTimeGreen = 0;
+		savedTimeYellow = 0;
 		currentColor = (mlt_team_color)-1;
 		device->setWhite(true);
 		device->showMedicBoxReady();
@@ -358,21 +360,91 @@ public:
 
 				int currentTime = millis() / 1000;
 				int delta = currentTime - lastSwitchTime;
-				int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
+
+				int savedTime;
+
+				switch (currentColor)
+				{
+				case MLT_ST_RED: {
+					savedTime = savedTimeRed;
+					break;
+				}
+					
+				case MLT_ST_BLUE: {
+					savedTime = savedTimeBlue;
+					break;
+				}
+					
+				case MLT_ST_YELLOW: {
+					savedTime = savedTimeYellow;
+					break;
+				}
+					
+				case MLT_ST_GREEN: {
+					savedTime = savedTimeGreen;
+					break;
+				}
+					
+				default:
+					savedTime = 0;
+					break;
+				}
+
 				lastSwitchTime = currentTime;
 				
-				if (currentColor == MLT_ST_RED) {
+
+
+				switch (currentColor)
+				{
+				case MLT_ST_RED: {
 					savedTimeRed += delta;
-				} else if (currentColor == MLT_ST_BLUE) {
+					break;
+				}
+
+				case MLT_ST_BLUE: {
 					savedTimeBlue += delta;
+					break;
+				}
+
+				case MLT_ST_YELLOW: {
+					savedTimeYellow += delta;
+					break;
+				}
+
+				case MLT_ST_GREEN: {
+					savedTimeGreen += delta;
+					break;
+				}
+				default:
+					break;
 				}
 				
 				currentColor = cmd->shot_data.team_color;
-				
-				if (currentColor == MLT_ST_RED) {
+
+
+				switch (currentColor)
+				{
+				case MLT_ST_RED: {
 					device->setRed(true);
-				} else {
+					break;
+				}
+
+				case MLT_ST_BLUE: {
 					device->setBlue(true);
+					break;
+				}
+
+				case MLT_ST_YELLOW: {
+					device->setYellow(true);
+					break;
+				}
+
+				case MLT_ST_GREEN: {
+					device->setGreen(true);
+					break;
+				}
+				default:
+					break;
 				}
 				
 				updateDisplay();
@@ -380,7 +452,7 @@ public:
 			}
 		}
 	}
-	
+
 	virtual void updateTime() {
 		static int oldTime = 0;
 		int currentTime = millis() / 1000;
@@ -389,7 +461,35 @@ public:
 			oldTime = currentTime;
 
 			int delta = currentTime - lastSwitchTime;
-			int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
+
+			int savedTime;
+
+			switch (currentColor)
+			{
+			case MLT_ST_RED: {
+				savedTime = savedTimeRed;
+				break;
+			}
+
+			case MLT_ST_BLUE: {
+				savedTime = savedTimeBlue;
+				break;
+			}
+
+			case MLT_ST_YELLOW: {
+				savedTime = savedTimeYellow;
+				break;
+			}
+
+			case MLT_ST_GREEN: {
+				savedTime = savedTimeGreen;
+				break;
+			}
+			default:
+				savedTime = 0;
+				break;
+			}
+
 			
 			if ( savedTime + delta < winTime ) {
 
@@ -404,10 +504,30 @@ public:
 				}
 				
 				bool on = (currentTime % 2 == 0);
-				if (currentColor == MLT_ST_RED) {
+
+				switch (currentColor)
+				{
+				case MLT_ST_RED: {
 					device->setRed(on);
-				} else {
+					break;
+				}
+
+				case MLT_ST_BLUE: {
 					device->setBlue(on);
+					break;
+				}
+
+				case MLT_ST_YELLOW: {
+					device->setYellow(on);
+					break;
+				}
+
+				case MLT_ST_GREEN: {
+					device->setGreen(on);
+					break;
+				}
+				default:
+					break;
 				}
 			}
 			device->preventSleep(1000);
@@ -417,10 +537,67 @@ public:
 	void updateDisplay() {
 		int currentTime = millis() / 1000;
 		int delta = currentTime - lastSwitchTime;
-		int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
+
+
+		int savedTime;
+		switch (currentColor)
+		{
+		case MLT_ST_RED: {
+			savedTime = savedTimeRed;
+			break;
+		}
+
+		case MLT_ST_BLUE: {
+			savedTime = savedTimeBlue;
+			break;
+		}
+
+		case MLT_ST_YELLOW: {
+			savedTime = savedTimeYellow;
+			break;
+		}
+
+		case MLT_ST_GREEN: {
+			savedTime = savedTimeGreen;
+			break;
+		}
+		default:
+			savedTime = 0;
+			break;
+		}
+
 		
 		int timeValue = ((long)(savedTime + delta)*100/60)*10;
-		const char* text = currentColor == MLT_ST_RED ? "  Red  " : "  Blue  ";
+
+
+		const char* text = "";
+
+		switch (currentColor)
+		{
+		case MLT_ST_RED: {
+			text = "  RED  ";
+			break;
+		}
+
+		case MLT_ST_BLUE: {
+			text = "  BLUE  ";
+			break;
+		}
+
+		case MLT_ST_YELLOW: {
+			text = "  YELLOW  ";
+			break;
+		}
+
+		case MLT_ST_GREEN: {
+			text = "  GREEN  ";
+			break;
+		}
+		default:
+			savedTime = 0;
+			break;
+		}
+
 		device->showTimeInterval(timeValue, text);
 	}
 	
@@ -429,6 +606,8 @@ protected:
 	int lastSwitchTime;
 	int savedTimeRed;
 	int savedTimeBlue;
+	int savedTimeGreen;
+	int savedTimeYellow;
 	bool isGameOver;
 	mlt_team_color currentColor;
 };

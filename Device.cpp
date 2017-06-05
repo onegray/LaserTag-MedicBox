@@ -177,6 +177,19 @@ void Device::setBlue(bool on) {
 	analogWrite(LED_BLUE_PIN, (on ? 100 : 0));
 }
 
+void Device::setGreen(bool on) {
+	analogWrite(LED_RED_PIN, 0);
+	analogWrite(LED_GREEN_PIN, (on ? 100 : 0));
+	analogWrite(LED_BLUE_PIN, 0);
+}
+
+void Device::setYellow(bool on) {
+	char v = on ? 50 : 0;
+	analogWrite(LED_RED_PIN, v);
+	analogWrite(LED_GREEN_PIN, v);
+	analogWrite(LED_BLUE_PIN, 0);
+}
+
 void Device::setWhite(bool on) {
 	char v = on ? 50 : 0;
 	analogWrite(LED_RED_PIN, v);

@@ -82,7 +82,9 @@ public:
 	void setRed(bool on);
 	void setBlue(bool on);
 	void setWhite(bool on);
-
+  void setGreen(bool on);
+  void setYellow(bool on);
+  
 	void preventSleep(int duration);
 	bool canSleep();
 	

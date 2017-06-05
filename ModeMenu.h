@@ -53,7 +53,12 @@ enum ModeType : char {
 	ModeTestInvulnerabilityTime1500,
 	ModeTestInvulnerabilityTime1520,
 	ModeTestInvulnerabilityTime1550,
+  
+  ModeDominationTube,
+  
 	ModeTypeCount,
+  
+	
 };
 
 
@@ -135,7 +140,8 @@ public:
 				return new InvulnerabilityTimeTest(device, 1520);
 			case ModeTestInvulnerabilityTime1550:
 				return new InvulnerabilityTimeTest(device, 1550);
-				
+			case ModeDominationTube:
+				return new DominationTube(device, 4);
 			default:
 				break;
 		}
@@ -166,6 +172,8 @@ public:
 			"Test Invulnerability 1.5",
 			"Test Invulnerability 1.52",
 			"Test Invulnerability 1.55",
+      
+			"DominationTube 4"
 		};
 		return modeTypeTitles[m];
 	}
