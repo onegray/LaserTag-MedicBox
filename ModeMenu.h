@@ -141,7 +141,7 @@ public:
 			case ModeTestInvulnerabilityTime1550:
 				return new InvulnerabilityTimeTest(device, 1550);
 			case ModeDominationTube:
-				return new DominationTube(device, 4);
+				return new DominationTube(device, 8);
 			default:
 				break;
 		}
@@ -173,7 +173,7 @@ public:
 			"Test Invulnerability 1.52",
 			"Test Invulnerability 1.55",
       
-			"DominationTube 4"
+			"DominationTube 8"
 		};
 		return modeTypeTitles[m];
 	}

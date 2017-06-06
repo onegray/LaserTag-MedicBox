@@ -339,11 +339,16 @@ public:
 
 	virtual void reset() {
 		isGameOver = false;
+
+    savedTimes[0] = 0;
+    savedTimes[1] = 0;
+    savedTimes[2] = 0;
+    savedTimes[3] = 0;
+    
 		lastSwitchTime = millis() / 1000;
-		savedTimeRed = 0;
-		savedTimeBlue = 0;
-		savedTimeGreen = 0;
-		savedTimeYellow = 0;
+  
+		
+    
 		currentColor = (mlt_team_color)-1;
 		device->setWhite(true);
 		device->showMedicBoxReady();
@@ -361,64 +366,12 @@ public:
 				int currentTime = millis() / 1000;
 				int delta = currentTime - lastSwitchTime;
 
-				int savedTime;
-
-				switch (currentColor)
-				{
-				case MLT_ST_RED: {
-					savedTime = savedTimeRed;
-					break;
-				}
-					
-				case MLT_ST_BLUE: {
-					savedTime = savedTimeBlue;
-					break;
-				}
-					
-				case MLT_ST_YELLOW: {
-					savedTime = savedTimeYellow;
-					break;
-				}
-					
-				case MLT_ST_GREEN: {
-					savedTime = savedTimeGreen;
-					break;
-				}
-					
-				default:
-					savedTime = 0;
-					break;
-				}
+				int savedTime = savedTimes[currentColor];
 
 				lastSwitchTime = currentTime;
-				
 
+        savedTimes[currentColor] += delta;
 
-				switch (currentColor)
-				{
-				case MLT_ST_RED: {
-					savedTimeRed += delta;
-					break;
-				}
-
-				case MLT_ST_BLUE: {
-					savedTimeBlue += delta;
-					break;
-				}
-
-				case MLT_ST_YELLOW: {
-					savedTimeYellow += delta;
-					break;
-				}
-
-				case MLT_ST_GREEN: {
-					savedTimeGreen += delta;
-					break;
-				}
-				default:
-					break;
-				}
-				
 				currentColor = cmd->shot_data.team_color;
 
 
@@ -461,35 +414,7 @@ public:
 			oldTime = currentTime;
 
 			int delta = currentTime - lastSwitchTime;
-
-			int savedTime;
-
-			switch (currentColor)
-			{
-			case MLT_ST_RED: {
-				savedTime = savedTimeRed;
-				break;
-			}
-
-			case MLT_ST_BLUE: {
-				savedTime = savedTimeBlue;
-				break;
-			}
-
-			case MLT_ST_YELLOW: {
-				savedTime = savedTimeYellow;
-				break;
-			}
-
-			case MLT_ST_GREEN: {
-				savedTime = savedTimeGreen;
-				break;
-			}
-			default:
-				savedTime = 0;
-				break;
-			}
-
+			int savedTime = savedTimes[currentColor];
 			
 			if ( savedTime + delta < winTime ) {
 
@@ -539,34 +464,8 @@ public:
 		int delta = currentTime - lastSwitchTime;
 
 
-		int savedTime;
-		switch (currentColor)
-		{
-		case MLT_ST_RED: {
-			savedTime = savedTimeRed;
-			break;
-		}
-
-		case MLT_ST_BLUE: {
-			savedTime = savedTimeBlue;
-			break;
-		}
-
-		case MLT_ST_YELLOW: {
-			savedTime = savedTimeYellow;
-			break;
-		}
-
-		case MLT_ST_GREEN: {
-			savedTime = savedTimeGreen;
-			break;
-		}
-		default:
-			savedTime = 0;
-			break;
-		}
-
-		
+		int savedTime = savedTimes[currentColor];
+	
 		int timeValue = ((long)(savedTime + delta)*100/60)*10;
 
 
@@ -594,7 +493,6 @@ public:
 			break;
 		}
 		default:
-			savedTime = 0;
 			break;
 		}
 
@@ -604,10 +502,7 @@ public:
 protected:
 	int winTime;
 	int lastSwitchTime;
-	int savedTimeRed;
-	int savedTimeBlue;
-	int savedTimeGreen;
-	int savedTimeYellow;
+  int savedTimes[4];
 	bool isGameOver;
 	mlt_team_color currentColor;
 };
