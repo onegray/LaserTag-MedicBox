@@ -365,41 +365,17 @@ public:
 
 				int currentTime = millis() / 1000;
 				int delta = currentTime - lastSwitchTime;
-
-				int savedTime = savedTimes[currentColor];
+				if((int)currentColor != -1 ){
+					int savedTime = savedTimes[currentColor];
+				}
 
 				lastSwitchTime = currentTime;
-
-        savedTimes[currentColor] += delta;
+				if((int)currentColor != -1 ){
+					savedTimes[currentColor] += delta;
+				}
 
 				currentColor = cmd->shot_data.team_color;
-
-
-				switch (currentColor)
-				{
-				case MLT_ST_RED: {
-					device->setRed(true);
-					break;
-				}
-
-				case MLT_ST_BLUE: {
-					device->setBlue(true);
-					break;
-				}
-
-				case MLT_ST_YELLOW: {
-					device->setYellow(true);
-					break;
-				}
-
-				case MLT_ST_GREEN: {
-					device->setGreen(true);
-					break;
-				}
-				default:
-					break;
-				}
-				
+				turnLedColor(true);				
 				updateDisplay();
 				device->playConfirmBeep();
 			}
@@ -429,74 +405,77 @@ public:
 				}
 				
 				bool on = (currentTime % 2 == 0);
-
-				switch (currentColor)
-				{
-				case MLT_ST_RED: {
-					device->setRed(on);
-					break;
-				}
-
-				case MLT_ST_BLUE: {
-					device->setBlue(on);
-					break;
-				}
-
-				case MLT_ST_YELLOW: {
-					device->setYellow(on);
-					break;
-				}
-
-				case MLT_ST_GREEN: {
-					device->setGreen(on);
-					break;
-				}
-				default:
-					break;
-				}
+				turnLedColor(on);
 			}
 			device->preventSleep(1000);
 		}
 	}
 
 	void updateDisplay() {
+
 		int currentTime = millis() / 1000;
 		int delta = currentTime - lastSwitchTime;
 
+		if((int)currentColor != -1){		
+			int savedTime = savedTimes[currentColor];
+			int timeValue = ((long)(savedTime + delta)*100/60)*10;
 
-		int savedTime = savedTimes[currentColor];
-	
-		int timeValue = ((long)(savedTime + delta)*100/60)*10;
+			const char* text = "";
 
+			switch (currentColor)
+			{
+				case MLT_ST_RED: {
+					text = "  RED  ";
+					break;
+				}
 
-		const char* text = "";
+				case MLT_ST_BLUE: {
+					text = "  BLUE  ";
+					break;
+				}
 
+				case MLT_ST_YELLOW: {
+					text = "  YELLOW  ";
+					break;
+				}
+
+				case MLT_ST_GREEN: {
+					text = "  GREEN  ";
+					break;
+				}
+				default:
+				break;
+			}
+			device->showTimeInterval(timeValue, text);
+		}
+	}
+
+	void turnLedColor(bool on) {
 		switch (currentColor)
 		{
-		case MLT_ST_RED: {
-			text = "  RED  ";
-			break;
-		}
+			case MLT_ST_RED: {
+				device->setRed(on);
+				break;
+			}
 
-		case MLT_ST_BLUE: {
-			text = "  BLUE  ";
-			break;
-		}
+			case MLT_ST_BLUE: {
+				device->setBlue(on);
+				break;
+			}
+			
+			case MLT_ST_YELLOW: {
+				device->setYellow(on);
+				break;
+			}
 
-		case MLT_ST_YELLOW: {
-			text = "  YELLOW  ";
-			break;
-		}
+			case MLT_ST_GREEN: {
+				device->setGreen(on);
+				break;
+			}
 
-		case MLT_ST_GREEN: {
-			text = "  GREEN  ";
+			default:
 			break;
 		}
-		default:
-			break;
-		}
-
-		device->showTimeInterval(timeValue, text);
 	}
 	
 protected:
