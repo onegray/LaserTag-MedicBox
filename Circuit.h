@@ -79,19 +79,32 @@ Pin3       |
 
 
 /* Speaker */
-#define SOUND_PIN       5	// Output
+#define SOUND_PIN       7	// Output
 
 
 
 /* Nokia 5110 LCD */
 /* Pin mapping (defined in PCD8544_SPI.h):
- Pin8  - DC
- Pin9  - Reset
- Pin10 - CSE
- Pin11 - SDIN
- Pin13 - SCLK */
+ DC  - Pin8
+ RST - Pin9
+ DIN - Pin11
+ CLK - Pin13
+ CE  - GND
+ GND - GND
+ VCC - VCC
+*/
 
-#define BACKLIGHT_PIN	6   // Output
+
+
+#define BACKLIGHT_PIN   A0  // Output
+
+
+
+/* Leds */
+#define LED_RED_PIN     5   // PWM Output
+#define LED_BLUE_PIN    6   // PWM Output
+#define LED_GREEN_PIN   10  // PWM Output
+
 
 
 #endif

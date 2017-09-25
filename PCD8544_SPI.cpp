@@ -44,6 +44,9 @@ void PCD8544_SPI::begin(bool invert, uint8_t vop, uint8_t tempCoef, uint8_t bias
 	PCD8544_PORT |= (PIN_DC | PIN_RESET | PIN_CE);
 	PCD8544_DDR |= (PIN_DC | PIN_RESET | PIN_CE);
 	SPI.begin();
+#if PIN_CE != 0x04 // if D10 pin is not used for CE then disable it  -- SergeyN
+	PCD8544_PORT &= ~0x04;
+#endif        
 	
 	// LCD init section:
 	
