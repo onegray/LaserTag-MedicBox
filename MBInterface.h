@@ -1,9 +1,9 @@
 //
-//  Device.h
+//  SmartMedic.h
 //  MedicBox
 //
-//  Created by Sergey Nikitenko on 7/4/15.
-//  Copyright (c) 2015, Sergey Nikitenko. All rights reserved.
+//  Created by Sergey Nikitenko on 9/23/17.
+//  Copyright (c) 2015-2017, Sergey Nikitenko. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -24,70 +24,69 @@
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef DEVICE_H
-#define DEVICE_H
 
-#include "Display.h"
-#include "Speaker.h"
-#include "mlt_core.h"
+#ifndef MEDIC_BOX_H
+#define MEDIC_BOX_H
+
+#include "Device.h"
+#include "ConfigurationProfile.h"
+
+class MedicBox
+{
+public:
+
+	MedicBox(Device* aDevice) {
+		device = aDevice;
+		config = NULL;
+	}
+
+	MedicBox(Device* aDevice, ConfigurationProfile* aConfig) {
+		device = aDevice;
+		config = aConfig;
+	}
+	
+	virtual void reset() {
+	}
+	
+	virtual void processButton() {
+	}
+	
+	virtual void processCommand(mlt_command* cmd) {
+	}
+	
+	virtual void updateTime() {
+	}
+	
+protected:
+	Device* device;
+	ConfigurationProfile* config;
+};
 
 
-class Device
+class MedicBoxSubmenu
 {
 public:
 	
-	Device();
+	MedicBoxSubmenu(Device* aDevice, ConfigurationProfile* aConfig) {
+		device = aDevice;
+		config = aConfig;
+	}
 	
-	bool isButtonPressed();
-
-	mlt_command receiveCommand();
-
-	void sendNewGameCommand();
+	virtual void reset() {
+	}
 	
-	void sendShotCommand();
+	virtual void processButton() {
+	}
 	
-
-	void showDeviceReady();
+	virtual void processCommand(mlt_command* cmd) {
+	}
 	
-	void showMenuMode(const char* modeTitle);
-
-	void showMedicBoxReady();
-	
-	void showTimeInterval(int ms, const char* title = NULL);
-	
-	void showTimerNumber(int number, const char* title = NULL);
-	
-	void showStatusText(const char* text);
-	
-	void showHealthNumber(int number);
-
-	void showRespawnNumber(int number);
-	
-	void showHit();
-	
-	void showGameOver();
-	
-	void showRespawn();
-	
-	void showEmpty();
-
-	void playConfirmBeep();
-
-	void playWarningBeep();
-	
-	void turnBacklight(bool mode);
-
-	void preventSleep(int duration);
-	bool canSleep();
+	virtual void saveConfig() {
+	}
 	
 protected:
-	unsigned long sleeplessEndingBound;
-	bool backlightMode;
-	
-public:
-	Display display;
-	Speaker speaker;
+	Device* device;
+	ConfigurationProfile* config;
 };
-
 
 #endif

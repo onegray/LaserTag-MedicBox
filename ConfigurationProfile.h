@@ -28,6 +28,7 @@
 #define CONFIGURATION_PROFILE_H
 
 #include <EEPROM.h>
+#include "mlt_core.h"
 
 #define EEPROM_DATA_BASE_ADDR		0x20
 
@@ -36,6 +37,10 @@ struct EEPROM_DATA {
 	uint8_t submenuMode;
 	bool backlightMode;
 	int menuParam;
+	int invTime;
+	mlt_command apCmd;
+	uint8_t apShotInterval;
+	int apStunTime;
 };
 
 #define EEPROM_ADDR(field)	((int)&(((struct EEPROM_DATA*)EEPROM_DATA_BASE_ADDR)->field))
@@ -75,6 +80,43 @@ public:
 		writeData(&dataCache.backlightMode, sizeof(dataCache.backlightMode), EEPROM_ADDR(backlightMode));
 	}
 
+	int getTestInvulnerabilityTime() {
+		return dataCache.invTime;
+	}
+
+	void saveTestInvulnerabilityTime(int time) {
+		dataCache.invTime = time;
+		writeData(&dataCache.invTime, sizeof(dataCache.invTime), EEPROM_ADDR(invTime));
+	}
+	
+	mlt_command getAnomalyPointCommand() {
+		return dataCache.apCmd;
+	}
+	
+	void saveAnomalyPointCommand(mlt_command* cmd) {
+		dataCache.apCmd = *cmd;
+		writeData(&dataCache.apCmd, sizeof(dataCache.apCmd), EEPROM_ADDR(apCmd));
+	}
+	
+	uint8_t getAnomalyPointShotInterval() {
+		return dataCache.apShotInterval;
+	}
+	
+	void saveAnomalyPointShotInterval(uint8_t interval) {
+		dataCache.apShotInterval = interval;
+		writeData(&dataCache.apShotInterval, sizeof(dataCache.apShotInterval), EEPROM_ADDR(apShotInterval));
+	}
+
+	int getAnomalyPointStunTime() {
+		return dataCache.apStunTime;
+	}
+	
+	void saveAnomalyPointStunTime(int stunTime) {
+		dataCache.apStunTime = stunTime;
+		writeData(&dataCache.apStunTime, sizeof(dataCache.apStunTime), EEPROM_ADDR(apStunTime));
+	}
+
+	
 private:
 	
 	void readData(void* buf, int size, int addr) {

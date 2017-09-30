@@ -31,7 +31,7 @@
 
 #include "Circuit.h"
 #include "mlt_core.h"
-#include "MedicBox.h"
+#include "MBInterface.h"
 #include "ModeMenu.h"
 #include "Device.h"
 #include "ConfigurationProfile.h"
@@ -85,21 +85,30 @@ void loop() {
 		}
 		goto sleep;
 	}
-	
+
 	if (menu != NULL) {
-		
+
 		if ( IsResetCmd(cmd) ) {
-			
-			menu->saveConfig();
-			delete menu;
-			menu = NULL;
-			
-			if(medic != NULL) {
-				delete medic;
+			if (menu->submenu == NULL && menu->instantiateSubmenu()) {
+				menu->submenu->reset();
+			} else {
+				menu->saveConfig();
+				delete menu;
+				menu = NULL;
+
+				if(medic != NULL) {
+					delete medic;
+				}
+				medic = ModeMenu::instantiateMedicBox(device, config);
+				if (medic != NULL) {
+					medic->reset();
+				}
 			}
-			medic = ModeMenu::instantiateMedicBox(device, config);
-			if (medic != NULL) {
-				medic->reset();
+		} else if ( menu->submenu != NULL ) {
+			if ( IsValidCmd(cmd) ) {
+				menu->submenu->processCommand(&cmd);
+			} else if (btnPressed) {
+				menu->submenu->processButton();
 			}
 		} else if ( IsEscCmd(cmd) ) {
 
@@ -109,7 +118,7 @@ void loop() {
 		}
 		goto sleep;
 	}
-	
+
 	if (medic != NULL) {
 
 		if ( IsResetCmd(cmd) ) {

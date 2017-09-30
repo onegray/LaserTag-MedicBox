@@ -28,12 +28,17 @@
 #define MODE_MENU_H
 
 #include "Device.h"
-#include "MedicBox.h"
 #include "ConfigurationProfile.h"
+#include "MBSimpleMedic.h"
+#include "MBSmartMedic.h"
+#include "MBAnomalyPoint.h"
+#include "MBTagTest.h"
+
+class MedicBoxSubmenu;
 
 enum ModeType : char {
 	ModeSimpleMedic,
-	ModeStatisticMedic,
+	ModeRespCountMedic,
 	ModeAliveMedic4,
 	ModeAliveMedic10,
 	
@@ -45,18 +50,12 @@ enum ModeType : char {
 	ModeTempAliveMedic2,
 	ModeTempAliveMedic3,
 
-	ModeTestStunTime,
-	ModeTestInvulnerabilityTime1300,
-	ModeTestInvulnerabilityTime1310,
-	ModeTestInvulnerabilityTime1320,
-	ModeTestInvulnerabilityTime1350,
+	ModeAnomalyPoint,
 	
-	ModeTestInvulnerabilityTime1500,
-	ModeTestInvulnerabilityTime1520,
-	ModeTestInvulnerabilityTime1550,
+	ModeTestStunTime,
+	ModeTestInvulnerabilityTime,
 	ModeTypeCount,
 };
-
 
 class ModeMenu
 {
@@ -68,9 +67,20 @@ public:
 		mode = (ModeType)config->getMenuMode();
 		backlight = config->getBacklightMode();
 		device->showMenuMode(getModeTitle(mode));
+		submenu = NULL;
 	}
 
+	~ModeMenu() {
+		if (submenu) {
+			delete submenu;
+		}
+	}
+	
 	void changeMode() {
+		if (submenu) {
+			delete submenu;
+			submenu = NULL;
+		}
 		mode = (ModeType) ((mode+1) % ModeTypeCount);
 		device->showMenuMode(getModeTitle(mode));
 	}
@@ -87,6 +97,9 @@ public:
 	void saveConfig() {
 		config->saveMenuMode(mode);
 		config->saveBacklightMode(backlight);
+		if (submenu) {
+			submenu->saveConfig();
+		}
 	}
 
 	
@@ -94,9 +107,9 @@ public:
 		ModeType mode = (ModeType) config->getMenuMode();
 		switch (mode) {
 			case ModeSimpleMedic:
-				return new MedicBox(device);
-			case ModeStatisticMedic:
-				return new StatisticMedicBox(device);
+				return new SimpleMedicBox(device);
+			case ModeRespCountMedic:
+				return new RespCountMedicBox(device);
 				
 			case ModeAliveMedic4:
 				return new AliveMedicBox(device, 4);
@@ -119,25 +132,14 @@ public:
 			case ModeTempAliveMedic3:
 				return new TempAliveMedicBox(device, 3*60);
 
+			case ModeAnomalyPoint:
+				return new AnomalyPointMedicBox(device, config);
 				
 			case ModeTestStunTime:
 				return new StunTimeTest(device);
 				
-			case ModeTestInvulnerabilityTime1300:
-				return new InvulnerabilityTimeTest(device, 1300);
-			case ModeTestInvulnerabilityTime1310:
-				return new InvulnerabilityTimeTest(device, 1310);
-			case ModeTestInvulnerabilityTime1320:
-				return new InvulnerabilityTimeTest(device, 1320);
-			case ModeTestInvulnerabilityTime1350:
-				return new InvulnerabilityTimeTest(device, 1350);
-				
-			case ModeTestInvulnerabilityTime1500:
-				return new InvulnerabilityTimeTest(device, 1500);
-			case ModeTestInvulnerabilityTime1520:
-				return new InvulnerabilityTimeTest(device, 1520);
-			case ModeTestInvulnerabilityTime1550:
-				return new InvulnerabilityTimeTest(device, 1550);
+			case ModeTestInvulnerabilityTime:
+				return new InvulnerabilityTimeTest(device, config);
 				
 			default:
 				break;
@@ -146,33 +148,54 @@ public:
 	}
 	
 	const char* getModeTitle(ModeType m) {
-		static const char* modeTypeTitles[ModeTypeCount] = {
-			"Simple",
-			"Resp counting",
-			
-			"Alive Medic   health 4",
-			"Alive Medic   health 10",
-			
-			"Temp Medic       0.5/3",
-			"Temp Medic       0.5/5",
-			"Temp Medic       1/5",
-			"Temp Medic       1/10",
-
-			"Temp Medic      Alive/2",
-			"Temp Medic      Alive/3",
-			
-			"Test Stun Time",
-			"Test Invulnerability 1.3",
-			"Test Invulnerability 1.31",
-			"Test Invulnerability 1.32",
-			"Test Invulnerability 1.35",
-
-			"Test Invulnerability 1.5",
-			"Test Invulnerability 1.52",
-			"Test Invulnerability 1.55",
-		};
-		return modeTypeTitles[m];
+		switch (m) {
+			case ModeSimpleMedic:
+				return "Simple";
+			case ModeRespCountMedic:
+				return "Resp counting";
+			case ModeAliveMedic4:
+				return "Alive Medic   health 4";
+			case ModeAliveMedic10:
+				return "Alive Medic   health 10";
+			case ModeTempMedic05_3:
+				return "Temp Medic       0.5/3";
+			case ModeTempMedic05_5:
+				return "Temp Medic       0.5/5";
+			case ModeTempMedic1_5:
+				return "Temp Medic       1/5";
+			case ModeTempMedic1_10:
+				return "Temp Medic       1/10";
+			case ModeTempAliveMedic2:
+				return "Temp Medic      Alive/2";
+			case ModeTempAliveMedic3:
+				return "Temp Medic      Alive/3";
+			case ModeAnomalyPoint:
+				return "Anomaly Point *";
+			case ModeTestStunTime:
+				return "Test Stun Time";
+			case ModeTestInvulnerabilityTime:
+				return "Test Invulnerability *";
+			default:
+				break;
+		}
+		return NULL;
 	}
+	
+	bool instantiateSubmenu() {
+		switch (mode) {
+			case ModeAnomalyPoint:
+				submenu = new AnomalyPointSubmenu(device, config);
+				break;
+			case ModeTestInvulnerabilityTime:
+				submenu = new InvulnerabilityTestSubmenu(device, config);
+				break;
+			default:
+				break;
+		}
+		return submenu != NULL;
+	}
+	
+	MedicBoxSubmenu* submenu;
 	
 protected:
 	Device* device;

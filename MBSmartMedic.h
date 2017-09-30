@@ -1,9 +1,9 @@
 //
-//  SmartMedic.h
+//  MBSmartMedic.h
 //  MedicBox
 //
-//  Created by Sergey Nikitenko on 7/2/15.
-//  Copyright (c) 2015, Sergey Nikitenko. All rights reserved.
+//  Created by Sergey Nikitenko on 9/30/17.
+//  Copyright (c) 2015-2017, Sergey Nikitenko. All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -25,87 +25,9 @@
 //
 
 
-#ifndef SMART_MEDIC_H
-#define SMART_MEDIC_H
 
-#include "Device.h"
-
-class MedicBox
-{
-public:
-	MedicBox(Device* aDevice) {
-		device = aDevice;
-	}
-	
-	virtual void reset() {
-		device->showMedicBoxReady();
-		device->showStatusText("   - /--/ -   ");
-	}
-
-	virtual void processButton() {
-		device->sendNewGameCommand();
-		device->showRespawn();
-		delay(220);
-	}
-
-	virtual void processCommand(mlt_command* cmd) {
-		if(cmd->command_type == MLT_CT_SHOT) {
-			device->showHit();
-			delay(100);
-			device->showStatusText("   - /--/ -   ");
-		}
-	}
-	
-	virtual void updateTime() {
-	}
-	
-protected:
-	Device* device;
-};
-
-
-class StatisticMedicBox : public MedicBox
-{
-public:
-	
-	StatisticMedicBox(Device* aDevice)
-	: MedicBox(aDevice) {
-	}
-	
-	virtual void reset() {
-		respawnCount = 0;
-		device->showMedicBoxReady();
-		device->showRespawnNumber(respawnCount);
-		device->preventSleep(1550);
-	}
-	
-	virtual void processButton() {
-		static unsigned long lastRespawnTime = 0;
-		static unsigned long lastRegisteredTime = 0;
-		unsigned long currentTime = millis();
-
-		if(currentTime > lastRespawnTime + 300) {
-			lastRespawnTime = currentTime;
-			device->sendNewGameCommand();
-			device->showRespawn();
-			device->preventSleep(350);
-			
-			if(currentTime > lastRegisteredTime + 1500) {
-				lastRegisteredTime = currentTime;
-				respawnCount++;
-				device->showRespawnNumber(respawnCount);
-				device->preventSleep(1550);
-			}
-		}
-	}
-	
-	virtual void processCommand(mlt_command* cmd) {
-	}
-	
-protected:
-	int respawnCount;
-};
-
+#ifndef MB_SMART_MEDIC_H
+#define MB_SMART_MEDIC_H
 
 class AliveMedicBox : public MedicBox
 {
@@ -241,92 +163,4 @@ public:
 	}
 };
 
-class StunTimeTest : public MedicBox
-{
-public:
-	
-	StunTimeTest(Device* aDevice)
-	: MedicBox(aDevice) {
-	}
-	
-	virtual void reset() {
-		device->showMedicBoxReady();
-		device->showStatusText("Shot to start");
-	}
-	
-	virtual void processButton() {
-		device->sendNewGameCommand();
-	}
-	
-	virtual void processCommand(mlt_command* cmd) {
-		if(cmd->command_type == MLT_CT_SHOT) {
-			startTest();
-		}
-	}
-
-	void startTest() {
-		device->showStatusText("Waiting for shot...");
-		delay(10);
-		
-		device->sendShotCommand();
-		
-		unsigned long startTime = micros();
-		unsigned long endTime = startTime;
-		
-		mlt_command cmd = device->receiveCommand();
-		while (cmd.command_type != MLT_CT_SHOT) {
-			endTime = micros();
-			cmd = device->receiveCommand();
-		}
-		
-		long stunTime = endTime - startTime;
-		
-		device->showTimeInterval(stunTime/1000, "Stun time:");
-		delay(500);
-	}
-	
-};
-
-
-class InvulnerabilityTimeTest : public MedicBox
-{
-public:
-	
-	InvulnerabilityTimeTest(Device* aDevice, int invulnerabilityTime)
-	: MedicBox(aDevice) {
-		this->invulnerabilityTime = invulnerabilityTime;
-	}
-	
-	virtual void reset() {
-		device->showMedicBoxReady();
-		device->showStatusText("Shot to start");
-	}
-	
-	virtual void processButton() {
-		device->sendNewGameCommand();
-	}
-	
-	virtual void processCommand(mlt_command* cmd) {
-		if(cmd->command_type == MLT_CT_SHOT) {
-			device->showStatusText("Shooting 4 times ...");
-			startTest();
-		}
-	}
-	
-	void startTest() {
-		delay(300);
-		for(int i=0; i<4; i++) {
-			device->sendShotCommand();
-			delay(invulnerabilityTime);
-		}
-		device->showStatusText("Done.                ");
-		delay(1000);
-		device->showStatusText("Shot to start");
-	}
-	
-protected:
-	int invulnerabilityTime;
-};
-
-
-#endif
+#endif /* MB_SMART_MEDIC_H */
