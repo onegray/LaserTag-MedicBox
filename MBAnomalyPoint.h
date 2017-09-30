@@ -48,7 +48,7 @@ public:
 		health = maxHealth;
 		device->showMedicBoxReady();
 		updateTime();
-		device->preventSleep(2000);
+		device->preventSleep(10000);
 	}
 	
 	virtual void processButton() {
@@ -61,6 +61,7 @@ public:
 				device->showHit();
 				delay(1500);
 				updateDisplay();
+				startTime = millis() / 1000;
 			}
 		}
 	}
@@ -81,7 +82,7 @@ public:
 				startTime = currentTime;
 			}
 			updateDisplay();
-			device->preventSleep(2000);
+			device->preventSleep(10000);
 		}
 	}
 
