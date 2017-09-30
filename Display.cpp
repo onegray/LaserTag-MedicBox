@@ -184,17 +184,17 @@ void Display::displayTime(int secondsValue, int y) {
 	uint8_t seconds = secondsValue - mins * 60;
 	
 	memcpy_P(buf, fontBigNumBitmap[mins % 10], sizeof(fontBigNumBitmap[0]));
-	lcd.writeBitmap(buf, 10, y, 18, 4);
+	lcd.writeBitmap(buf, 6, y, 18, 4);
 
 	lcd.writeBitmap(fontPointBitmap, 30, y+1, 5, 1);
-	lcd.writeBitmap(fontPointBitmap, 30, y+3, 5, 1);
+	lcd.writeBitmap(fontPointBitmap, 30, y+2, 5, 1);
 
 	uint8_t secondsHi = seconds/10;
 	memcpy_P(buf, fontBigNumBitmap[secondsHi], sizeof(fontBigNumBitmap[0]));
-	lcd.writeBitmap(buf, 36, y, 18, 4);
+	lcd.writeBitmap(buf, 40, y, 18, 4);
 
 	uint8_t secondsLow = seconds - secondsHi * 10;
 	memcpy_P(buf, fontBigNumBitmap[secondsLow], sizeof(fontBigNumBitmap[0]));
-	lcd.writeBitmap(buf, 56, y, 18, 4);
+	lcd.writeBitmap(buf, 60, y, 18, 4);
 }
 

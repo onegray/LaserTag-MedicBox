@@ -32,6 +32,7 @@
 #include "MBSimpleMedic.h"
 #include "MBSmartMedic.h"
 #include "MBAnomalyPoint.h"
+#include "MBDominationTube.h"
 #include "MBTagTest.h"
 
 class MedicBoxSubmenu;
@@ -51,7 +52,10 @@ enum ModeType : char {
 	ModeTempAliveMedic3,
 
 	ModeAnomalyPoint,
-	
+
+	ModeDominationTube,
+	ModeDominationTubeTDM,
+
 	ModeTestStunTime,
 	ModeTestInvulnerabilityTime,
 	ModeTypeCount,
@@ -116,7 +120,6 @@ public:
 			case ModeAliveMedic10:
 				return new AliveMedicBox(device, 10);
 				
-				
 			case ModeTempMedic05_3:
 				return new TempMedicBox(device, 0.5*60, 3*60);
 			case ModeTempMedic05_5:
@@ -125,7 +128,6 @@ public:
 				return new TempMedicBox(device, 1*60, 5*60);
 			case ModeTempMedic1_10:
 				return new TempMedicBox(device, 1*60, 10*60);
-
 				
 			case ModeTempAliveMedic2:
 				return new TempAliveMedicBox(device, 2*60);
@@ -134,6 +136,11 @@ public:
 
 			case ModeAnomalyPoint:
 				return new AnomalyPointMedicBox(device, config);
+				
+			case ModeDominationTube:
+				return new DominationTube(device, 7*60);
+			case ModeDominationTubeTDM:
+				return new DominationTubeTDM(device, 40);
 				
 			case ModeTestStunTime:
 				return new StunTimeTest(device);
@@ -171,6 +178,10 @@ public:
 				return "Temp Medic      Alive/3";
 			case ModeAnomalyPoint:
 				return "Anomaly Point *";
+			case ModeDominationTube:
+				return "Domination      Tube";
+			case ModeDominationTubeTDM:
+				return "Domination     Tube TDM";
 			case ModeTestStunTime:
 				return "Test Stun Time";
 			case ModeTestInvulnerabilityTime:

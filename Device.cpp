@@ -38,6 +38,16 @@ Device::Device() {
 	pinMode(BTN_PIN, INPUT);
 	pinMode(BACKLIGHT_PIN, OUTPUT);
 	
+	pinMode(LED_RED_PIN, OUTPUT);
+	digitalWrite(LED_RED_PIN, LOW);
+
+	pinMode(LED_GREEN_PIN, OUTPUT);
+	digitalWrite(LED_GREEN_PIN, LOW);
+
+	pinMode(LED_BLUE_PIN, OUTPUT);
+	digitalWrite(LED_BLUE_PIN, LOW);
+
+
 	mltSetup(IR_EMITTER_PIN, IR_SENSOR_PIN);
 }
 
@@ -143,11 +153,47 @@ void Device::playWarningBeep() {
 	speaker.playBeep2();
 }
 
+void Device::playGameOver() {
+	speaker.playRainbow3();
+}
+
+void Device::playGameStarted() {
+	speaker.playRainbow3();
+}
+
+
 
 void Device::turnBacklight(bool mode) {
 	backlightMode = mode;
 	digitalWrite(BACKLIGHT_PIN, mode ? HIGH : LOW);
 }
+
+void Device::setRed(bool on) {
+	analogWrite(LED_RED_PIN, (on ? 100 : 0) );
+	analogWrite(LED_GREEN_PIN, 0);
+	analogWrite(LED_BLUE_PIN, 0);
+}
+
+
+void Device::setBlue(bool on) {
+	analogWrite(LED_RED_PIN, 0);
+	analogWrite(LED_GREEN_PIN, 0);
+	analogWrite(LED_BLUE_PIN, (on ? 100 : 0));
+}
+
+void Device::setWhite(bool on) {
+	if (on) {
+		analogWrite(LED_RED_PIN, 40);
+		analogWrite(LED_GREEN_PIN, 70);
+		analogWrite(LED_BLUE_PIN, 40);
+	} else {
+		analogWrite(LED_RED_PIN, 0);
+		analogWrite(LED_GREEN_PIN, 0);
+		analogWrite(LED_BLUE_PIN, 0);
+	}
+}
+
+
 
 void Device::preventSleep(int duration) {
 	unsigned long endingBound = millis() + duration;
