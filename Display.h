@@ -41,9 +41,9 @@ public:
 	void displayText(uint8_t x, uint8_t y, const char* text);
 	void displayMultilineText(uint8_t x, uint8_t y, const char* text); //format: "\n line1\0 line2\0 ... \0\0"
 
-	void displayInteger(int value, int yPos = 0); //  yPos: 0 - top, 1 - middle, 2 - bottom
-	void displayFloating(int milliValue, int yPos = 0);
-	void displayTime(int seconds, int yPos = 0);
+	void displayInteger(unsigned value, uint8_t yPos = 0); //  yPos: 0 - top, 1 - middle, 2 - bottom
+	void displayFloating(unsigned milliValue, uint8_t yPos = 0);
+	void displayTime(unsigned seconds, uint8_t yPos = 0);
 	
 	void displayHit();
 

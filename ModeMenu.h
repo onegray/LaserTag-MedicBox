@@ -138,7 +138,7 @@ public:
 				return new AnomalyPointMedicBox(device, config);
 				
 			case ModeDominationTube:
-				return new DominationTube(device, 7*60);
+				return new DominationTube(device, config);
 			case ModeDominationTubeTDM:
 				return new DominationTubeTDM(device, 40);
 				
@@ -179,9 +179,9 @@ public:
 			case ModeAnomalyPoint:
 				return "Anomaly Point *";
 			case ModeDominationTube:
-				return "Domination      Tube";
+				return "Domination      Tube *";
 			case ModeDominationTubeTDM:
-				return "Domination     Tube TDM";
+				return "Domination     Tube TDM *";
 			case ModeTestStunTime:
 				return "Test Stun Time";
 			case ModeTestInvulnerabilityTime:
@@ -199,6 +199,12 @@ public:
 				break;
 			case ModeTestInvulnerabilityTime:
 				submenu = new InvulnerabilityTestSubmenu(device, config);
+				break;
+			case ModeDominationTube:
+				submenu = new DominationTubeSubmenu(device, config);
+				break;
+			case ModeDominationTubeTDM:
+				submenu = new DominationTubeTDMSubmenu(device, config);
 				break;
 			default:
 				break;

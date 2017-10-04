@@ -174,25 +174,43 @@ void Device::setRed(bool on) {
 	analogWrite(LED_BLUE_PIN, 0);
 }
 
+void Device::setGreen(bool on) {
+	analogWrite(LED_RED_PIN, (0) );
+	analogWrite(LED_GREEN_PIN, (on ? 100 : 0) );
+	analogWrite(LED_BLUE_PIN, 0);
+}
 
 void Device::setBlue(bool on) {
 	analogWrite(LED_RED_PIN, 0);
 	analogWrite(LED_GREEN_PIN, 0);
-	analogWrite(LED_BLUE_PIN, (on ? 100 : 0));
+	analogWrite(LED_BLUE_PIN, (on ? 100 : 0) );
+}
+
+void Device::setYellow(bool on) {
+	analogWrite(LED_RED_PIN, (on ? 100 : 0) );
+	analogWrite(LED_GREEN_PIN, (on ? 100 : 0) );
+	analogWrite(LED_BLUE_PIN, 0);
 }
 
 void Device::setWhite(bool on) {
-	if (on) {
-		analogWrite(LED_RED_PIN, 40);
-		analogWrite(LED_GREEN_PIN, 70);
-		analogWrite(LED_BLUE_PIN, 40);
-	} else {
-		analogWrite(LED_RED_PIN, 0);
-		analogWrite(LED_GREEN_PIN, 0);
-		analogWrite(LED_BLUE_PIN, 0);
-	}
+	analogWrite(LED_RED_PIN, (on ? 40 : 0) );
+	analogWrite(LED_GREEN_PIN, (on ? 70 : 0) );
+	analogWrite(LED_BLUE_PIN, (on ? 40 : 0) );
 }
 
+void Device::setColor(mlt_team_color clr) {
+	if (clr == MLT_ST_RED) {
+		setRed(true);
+	} else if (clr == MLT_ST_GREEN) {
+		setGreen(true);
+	} else if (clr == MLT_ST_BLUE) {
+		setBlue(true);
+	} else if (clr == MLT_ST_YELLOW) {
+		setYellow(true);
+	} else {
+		setWhite(false);
+	}
+}
 
 
 void Device::preventSleep(int duration) {

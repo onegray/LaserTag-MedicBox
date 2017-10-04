@@ -31,20 +31,34 @@
 #include "MBInterface.h"
 #include "Device.h"
 
+#define CLAMP_2_9(x) (2+(((x)-2)%8))
+
+// Optimized divisions
+#define DIV1000(x)	((x)*131/131072)
+#define DIV500(x)	((x)*131/65536)
+#define DIV250(x)	((x)*262/65536)
+#define DIV100(x)	((x)*41/4096)
+
+static const char* colorTitles[4] = {"Red:", "Blue:", "Yellow:", "Green:"};
+
 class DominationTube : public MedicBox
 {
 public:
-	DominationTube(Device* aDevice, int winTime)
-	: MedicBox(aDevice) {
-		this->winTime = winTime;
+	DominationTube(Device* aDevice, ConfigurationProfile* aConfig)
+	: MedicBox(aDevice, aConfig) {
+		uint8_t value = config->getDominationTubeParam();
+		this->winTime = CLAMP_2_9(value) * 4;
 	}
 	
 	virtual void reset() {
 		isGameOver = false;
-		lastSwitchTime = millis() / 1000;
-		savedTimeRed = 0;
-		savedTimeBlue = 0;
+		lastSwitchTime = DIV250(millis());
+		for (uint8_t i=0; i<4; i++) {
+			savedTimes[i] = 0;
+		}
+		currentTotalTime = 0;
 		currentColor = (mlt_team_color)-1;
+		previosColor = (mlt_team_color)-1;
 		device->setWhite(true);
 		device->showMedicBoxReady();
 		device->showStatusText("Shot to start");
@@ -57,106 +71,158 @@ public:
 	virtual void processCommand(mlt_command* cmd) {
 		if(cmd->command_type == MLT_CT_SHOT) {
 			if(!isGameOver && cmd->shot_data.team_color != currentColor) {
-				
-				int currentTime = millis() / 1000;
-				int delta = currentTime - lastSwitchTime;
-				int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
+				unsigned currentTime = DIV250(millis());
+				unsigned delta = currentTime - lastSwitchTime;
 				lastSwitchTime = currentTime;
+
+				savedTimes[currentColor] += delta;
 				
-				if (currentColor == MLT_ST_RED) {
-					savedTimeRed += delta;
-				} else if (currentColor == MLT_ST_BLUE) {
-					savedTimeBlue += delta;
-				}
-				
+				previosColor = currentColor;
 				currentColor = cmd->shot_data.team_color;
-				
-				if (currentColor == MLT_ST_RED) {
-					device->setRed(true);
-				} else {
-					device->setBlue(true);
-				}
+				currentTotalTime = savedTimes[currentColor];
 				
 				updateDisplay();
+				device->setColor(currentColor);
 				device->playConfirmBeep();
 			}
 		}
 	}
 	
 	virtual void updateTime() {
-		static int oldTime = 0;
-		int currentTime = millis() / 1000;
-		
+		static unsigned oldTime = 0;
+		unsigned currentTime = DIV250(millis());
 		if ( oldTime != currentTime && (int)currentColor != -1 ) {
 			oldTime = currentTime;
 			
-			int delta = currentTime - lastSwitchTime;
-			int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
+			unsigned delta = currentTime - lastSwitchTime;
+			currentTotalTime = savedTimes[currentColor] + delta;
 			
-			if ( savedTime + delta < winTime ) {
-				
+			if ( currentTotalTime < winTime ) {
 				updateDisplay();
-				
 			} else {
-				
 				if (!isGameOver) {
 					isGameOver = true;
 					device->playGameOver();
 					device->showGameOver();
 				}
-				
-				bool on = (currentTime % 2 == 0);
-				if (currentColor == MLT_ST_RED) {
-					device->setRed(on);
-				} else {
-					device->setBlue(on);
-				}
+				bool on = (currentTime % 4 < 2);
+				device->setColor( on ? currentColor : (mlt_team_color)-1 );
 			}
 			device->preventSleep(10000);
 		}
 	}
 	
 	void updateDisplay() {
-		int currentTime = millis() / 1000;
-		int delta = currentTime - lastSwitchTime;
-		int savedTime = currentColor == MLT_ST_RED ? savedTimeRed : savedTimeBlue;
-		
-		int time = savedTime + delta;
-		const char* text = currentColor == MLT_ST_RED ? "  Red  " : "  Blue  ";
-		
-		device->display.clearScreen();
-		device->display.displayText(0, 0, text);
-		device->display.displayTime(time, 2);
+		unsigned displayTime = currentTotalTime / 4;
+		static unsigned oldDisplayTime = 0;
+		if (displayTime != oldDisplayTime) {
+			oldDisplayTime = displayTime;
+
+			device->display.clearScreen();
+
+			device->display.displayText(3, 0, colorTitles[currentColor]);
+			device->display.displayTime(displayTime, 1);
+
+			if ( (int)previosColor != -1 ) {
+				const char prevTimeText[5];
+				itoa(prevTimeText, savedTimes[previosColor], 10);
+				device->display.displayText(0, 5, colorTitles[previosColor]);
+				device->display.displayText(6, 5, prevTimeText);
+			}
+		}
 	}
 	
 protected:
-	int winTime;
-	int lastSwitchTime;
-	int savedTimeRed;
-	int savedTimeBlue;
 	bool isGameOver;
+	unsigned winTime;
+	unsigned savedTimes[4];
+	unsigned lastSwitchTime;
+	unsigned currentTotalTime;
 	mlt_team_color currentColor;
+	mlt_team_color previosColor;
 };
 
+
+
+class DominationTubeSubmenu : public MedicBoxSubmenu
+{
+protected:
+	uint8_t value;
+	
+public:
+	DominationTubeSubmenu(Device* aDevice, ConfigurationProfile* aConfig)
+	: MedicBoxSubmenu(aDevice, aConfig) {
+		value = config->getDominationTubeParam();
+	}
+	
+	virtual void reset() {
+		device->display.clearScreen();
+		updateDisplay();
+		device->speaker.playBeep4();
+	}
+	
+	virtual void processButton() {
+		value = CLAMP_2_9(value+1);
+		updateDisplay();
+		delay(300);
+	}
+	
+	virtual void saveConfig() {
+		config->saveDominationTubeParam(value);
+	}
+	
+	void updateDisplay() {
+		char text[] = "time: X min";
+		text[6] = 0x30 + CLAMP_2_9(value);
+		device->display.displayText(0, 0, text);
+	}
+};
+
+
+
+struct TDMParams {
+	uint8_t startDelay;
+	uint8_t matchDelay;
+	uint8_t matchDuration;
+};
+
+static const TDMParams tdmParams[] = {
+	{5, 5, 30},
+	{5, 5, 40},
+	{5, 7, 30},
+	{5, 7, 40},
+	{5, 9, 40},
+	{35, 5, 30},
+	{35, 5, 40},
+	{35, 7, 30},
+	{35, 7, 40},
+	{35, 9, 40},
+	{90, 7, 40},
+};
 
 
 class DominationTubeTDM : public MedicBox
 {
 public:
-	DominationTubeTDM(Device* aDevice, int winTimeSec)
-	: MedicBox(aDevice) {
-		this->startDelayTime = 30*(1000/64);
-		this->readyDelayTime = 7*60*(1000/64);
-		this->winTime = 40 * (1000/64);
+	DominationTubeTDM(Device* aDevice, ConfigurationProfile* aConfig)
+	: MedicBox(aDevice, aConfig) {
+		uint8_t index = config->getTdmParam();
+		if (index > sizeof(tdmParams)/sizeof(tdmParams[0])) {
+			index = 0;
+		}
+		this->startDelayTime = tdmParams[index].startDelay * 4;
+		this->matchDelayTime = tdmParams[index].matchDelay * 60 * 4;
+		this->winTime = tdmParams[index].matchDuration * 4;
 	}
 	
 	virtual void reset() {
 		isGameStarted = false;
-		isGameReady = false;
+		isMatchStarted = false;
 		isGameOver = false;
-		restartTime = millis() / 64;
+		restartTime = DIV250(millis());
 		lastSwitchTime = 0;
 		currentColor = (mlt_team_color)-1;
+		previosColor = (mlt_team_color)-1;
 		device->setWhite(false);
 		device->showMedicBoxReady();
 		device->showStatusText("Not started");
@@ -169,122 +235,84 @@ public:
 	
 	virtual void processCommand(mlt_command* cmd) {
 		if(cmd->command_type == MLT_CT_SHOT) {
-			if(isGameReady && !isGameOver && cmd->shot_data.team_color != currentColor) {
-				
-				lastSwitchTime = millis() / 64;
-				
+			if(isMatchStarted && !isGameOver && cmd->shot_data.team_color != currentColor) {
+				lastSwitchTime = DIV250(millis());
+				previosColor = currentColor;
 				currentColor = cmd->shot_data.team_color;
-				
-				if (currentColor == MLT_ST_RED) {
-					device->setRed(true);
-				} else {
-					device->setBlue(true);
-				}
-				
-				updateDisplay();
+				updateMatchDisplay();
+				device->setColor(currentColor);
 				device->playConfirmBeep();
 			}
 		}
 	}
 	
+	
 	virtual void updateTime() {
-		static unsigned long oldTime = 0;
-		unsigned long currentTime = millis() / 64;
+		
+		static unsigned oldTime = 0;
+		unsigned currentTime = DIV250(millis());
 		
 		if ( oldTime != currentTime ) {
 			oldTime = currentTime;
 			
 			if (!isGameStarted) {
-				unsigned long timeElapsed = currentTime - restartTime;
-				unsigned long timeLeft = startDelayTime - timeElapsed;
+				unsigned timeElapsed = currentTime - restartTime;
+				timeLeft = startDelayTime - timeElapsed;
 				
-				if ( timeLeft < 10*(1000/64) ) {
+				if ( timeLeft < 24 ) {
 					
-					static int interval = 25;
-					static int index = interval;
-					static bool on = false;
-					if(on) {
-						if ( index-- == 0 ) {
-							index = 1;
-							on = false;
-							tone(SOUND_PIN, 500);
-							device->setWhite(true);
-						}
-					} else {
-						index = interval;
-						on = true;
-						noTone(SOUND_PIN);
-						device->setWhite(false);
-					}
+					prestartCountdown(timeLeft);
 					
 					if (timeElapsed >= startDelayTime) {
-						noTone(SOUND_PIN);
 						isGameStarted = true;
+						gameStartTime = currentTime;
 						device->playGameStarted();
 						device->setWhite(true);
-						//device->showStatusText("Game started!");
 					}
 				}
 				
-				if (timeElapsed % 8 == 0) {
-					int timeSeconds = timeLeft * 64 / 1000;
+				if (timeElapsed % 4 == 0) {
+					unsigned timeSeconds = timeLeft > 0 ? ((unsigned)timeLeft / 4) : 0;
 					device->display.clearScreen();
 					device->display.displayText(0, 0, " Not started ");
 					device->display.displayTime(timeSeconds, 2);
 				}
 				
 			}
-			else if (!isGameReady) {
+			else if (!isMatchStarted) {
 				
-				unsigned long timeElapsed = currentTime - restartTime - startDelayTime;
+				unsigned timeElapsed = currentTime - gameStartTime;
+				timeLeft = matchDelayTime - timeElapsed;
 				
-				if ( timeElapsed < readyDelayTime ) {
+				if ( timeLeft > 0 ) {
 					bool on = ((currentTime/2) % 2 == 0);
 					device->setWhite(on);
 					
-					if (timeElapsed % 8 == 0) {
-						unsigned long timeLeft = readyDelayTime - timeElapsed;
-						int timeSeconds = timeLeft * 64 / 1000;
+					if (timeElapsed % 4 == 0) {
+						unsigned timeSeconds = (unsigned)timeLeft / 4;
 						device->display.clearScreen();
 						device->display.displayText(0, 0, " - wait - ");
 						device->display.displayTime(timeSeconds, 2);
 					}
 					
 				} else {
-					isGameReady = true;
+					isMatchStarted = true;
 					device->playGameOver();
 					device->setWhite(true);
-					//device->showStatusText("Shot to start");
+					device->showStatusText("Shot to start");
 				}
 				
 				
 			} else if ( lastSwitchTime != 0 ) {
 				
+				unsigned elapsed = currentTime - lastSwitchTime;
+				prevTimeLeft = timeLeft;
+				timeLeft = winTime - elapsed;
 				
-				unsigned long elapsed = currentTime - lastSwitchTime;
-				
-				if ( elapsed < winTime ) {
-					
-					
-					unsigned char beepRepeat = elapsed / (30*(1000/64)/4);
-					static unsigned char cnt = 0;
-					cnt = (cnt + 1) % 32; // 0..31
-					
-					unsigned char beepCycleNum = cnt / 4;
-					if (beepCycleNum <= beepRepeat) {
-						unsigned char phase = cnt % 4;
-						if (phase < 2) {
-							tone(SOUND_PIN, 500);
-							//device->setWhite(true);
-						} else {
-							noTone(SOUND_PIN);
-							//device->setWhite(false);
-						}
-					}
-					
-					if (cnt % 8 == 0) {
-						updateDisplay();
-					}
+				if ( timeLeft > 0 ) {
+
+					finalCountdown(timeLeft);
+					updateMatchDisplay();
 					
 				} else {
 					
@@ -294,12 +322,8 @@ public:
 						device->showGameOver();
 					}
 					
-					bool on = ((currentTime/4) % 2 == 0);
-					if (currentColor == MLT_ST_RED) {
-						device->setRed(on);
-					} else {
-						device->setBlue(on);
-					}
+					bool on = (currentTime % 4 < 2);
+					device->setColor( on ? currentColor : (mlt_team_color)-1 );
 				}
 				
 			}
@@ -308,28 +332,116 @@ public:
 		
 	}
 	
-	void updateDisplay() {
-		unsigned long currentTime = millis();
-		unsigned long elapsed = currentTime - lastSwitchTime*64;
-		int time = elapsed / 1000;
-		const char* text = currentColor == MLT_ST_RED ? "  Red  " : "  Blue  ";
-
-		device->display.clearScreen();
-		device->display.displayText(0, 0, text);
-		device->display.displayTime(time, 2);
+	
+	void updateMatchDisplay() {
+		unsigned displayTime = timeLeft / 4;
+		static unsigned oldDisplayTime = 0;
+		if (displayTime != oldDisplayTime) {
+			oldDisplayTime = displayTime;
+			
+			device->display.clearScreen();
+			device->display.displayText(3, 0, colorTitles[currentColor]);
+			device->display.displayTime(displayTime, 1);
+			
+			if ( (int)previosColor != -1 ) {
+				const char prevTimeText[5];
+				itoa(prevTimeText, prevTimeLeft, 10);
+				device->display.displayText(0, 5, colorTitles[previosColor]);
+				device->display.displayText(6, 5, prevTimeText);
+			}
+		}
 	}
 	
-protected:
-	int startDelayTime;
-	int readyDelayTime;
-	int winTime;
+	void prestartCountdown(unsigned timeLeft) {
+		uint8_t step = timeLeft / 8;
+		uint8_t cnt = timeLeft % 8;
+		uint8_t cmp = step + 3;
+		if (cmp < cnt) {
+			tone(SOUND_PIN, 500);
+			device->setWhite(true);
+		} else {
+			noTone(SOUND_PIN);
+			device->setWhite(false);
+		}
+	}
 	
-	unsigned long restartTime;
-	unsigned long lastSwitchTime;
+	void finalCountdown(unsigned timeLeft) {
+		uint8_t progress = timeLeft < 45 ? (45 - timeLeft) : 0;
+		uint8_t beepRepeat = progress / 32;
+
+		static uint8_t cnt = 0;
+		cnt = (cnt + 1) % 32; // 0..31
+		
+		uint8_t beepCycleNum = cnt / 4;
+		if (beepCycleNum <= beepRepeat) {
+			uint8_t phase = cnt % 4;
+			if (phase < 2) {
+				tone(SOUND_PIN, 500);
+			} else {
+				noTone(SOUND_PIN);
+			}
+		}
+	}
+
+
+protected:
+	unsigned startDelayTime;
+	unsigned matchDelayTime;
+	unsigned winTime;
+	
+	unsigned restartTime;
+	unsigned gameStartTime;
+	unsigned lastSwitchTime;
+	int timeLeft;
+	int prevTimeLeft;
 	bool isGameStarted;
-	bool isGameReady;
+	bool isMatchStarted;
 	bool isGameOver;
 	mlt_team_color currentColor;
+	mlt_team_color previosColor;
+};
+
+
+class DominationTubeTDMSubmenu : public MedicBoxSubmenu
+{
+protected:
+	uint8_t index;
+	
+public:
+	DominationTubeTDMSubmenu(Device* aDevice, ConfigurationProfile* aConfig)
+	: MedicBoxSubmenu(aDevice, aConfig) {
+		index = config->getTdmParam() % (sizeof(tdmParams)/sizeof(tdmParams[0]));
+	}
+	
+	virtual void reset() {
+		updateDisplay();
+		device->speaker.playBeep4();
+	}
+	
+	virtual void processButton() {
+		index = (index + 1) % (sizeof(tdmParams)/sizeof(tdmParams[0]));
+		updateDisplay();
+		delay(300);
+	}
+	
+	virtual void saveConfig() {
+		config->saveTdmParam(index);
+	}
+	
+	void updateDisplay() {
+		device->display.clearScreen();
+
+		char buf[4];
+		itoa(buf, tdmParams[index].startDelay, 10);
+		device->display.displayText(1, 1, buf);
+		device->display.displayText(4, 1, "wait");
+		
+		itoa(buf, tdmParams[index].matchDelay, 10);
+		device->display.displayText(1, 2, buf);
+		device->display.displayText(4, 2, "/");
+		itoa(buf, tdmParams[index].matchDuration, 10);
+		device->display.displayText(6, 2, buf);
+	}
 };
 
 

@@ -41,6 +41,8 @@ struct EEPROM_DATA {
 	mlt_command apCmd;
 	uint8_t apShotInterval;
 	int apStunTime;
+	uint8_t dominationTubeParam;
+	uint8_t tdmParam;
 };
 
 #define EEPROM_ADDR(field)	((int)&(((struct EEPROM_DATA*)EEPROM_DATA_BASE_ADDR)->field))
@@ -116,7 +118,25 @@ public:
 		writeData(&dataCache.apStunTime, sizeof(dataCache.apStunTime), EEPROM_ADDR(apStunTime));
 	}
 
-	
+	uint8_t getDominationTubeParam() {
+		return dataCache.dominationTubeParam;
+	}
+
+	void saveDominationTubeParam(uint8_t param) {
+		dataCache.dominationTubeParam = param;
+		writeData(&dataCache.dominationTubeParam, sizeof(dataCache.dominationTubeParam), EEPROM_ADDR(dominationTubeParam));
+	}
+
+	uint8_t getTdmParam() {
+		return dataCache.tdmParam;
+	}
+
+	void saveTdmParam(uint8_t param) {
+		dataCache.tdmParam = param;
+		writeData(&dataCache.tdmParam, sizeof(dataCache.tdmParam), EEPROM_ADDR(tdmParam));
+	}
+
+
 private:
 	
 	void readData(void* buf, int size, int addr) {

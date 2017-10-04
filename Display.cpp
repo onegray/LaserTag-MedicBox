@@ -148,7 +148,7 @@ void Display::displayHit() {
 	lcd.writeBitmap(buf, 15, 0, 50, 6);
 }
 
-void Display::displayInteger(int value, int y) {
+void Display::displayInteger(unsigned int value, uint8_t y) {
 	uint8_t buf[sizeof(fontBigNumBitmap[0])];
 	uint8_t offset = value > 9 ? value > 99 ? value > 999 ? 62 : 52 : 42 : 32;
 	do {
@@ -161,7 +161,7 @@ void Display::displayInteger(int value, int y) {
 }
 
 
-void Display::displayFloating(int milliValue, int y) {
+void Display::displayFloating(unsigned milliValue, uint8_t y) {
 	uint8_t buf[sizeof(fontBigNumBitmap[0])];
 	uint8_t offsets[4] = {0, 26, 46, 66};
 	int power = 1000;
@@ -177,19 +177,21 @@ void Display::displayFloating(int milliValue, int y) {
 	lcd.writeBitmap(fontPointBitmap, 20, y+3, 5, 1);
 }
 
+#define DIV60(x)	((x)*273/16384)
+#define DIV10(x)	((x)*205/2048)
 
-void Display::displayTime(int secondsValue, int y) {
+void Display::displayTime(unsigned secondsValue, uint8_t y) {
 	uint8_t buf[sizeof(fontBigNumBitmap[0])];
-	uint8_t mins = secondsValue / 60;
+	uint8_t mins = DIV60(secondsValue+1);
 	uint8_t seconds = secondsValue - mins * 60;
 	
-	memcpy_P(buf, fontBigNumBitmap[mins % 10], sizeof(fontBigNumBitmap[0]));
+	memcpy_P(buf, fontBigNumBitmap[mins], sizeof(fontBigNumBitmap[0]));
 	lcd.writeBitmap(buf, 6, y, 18, 4);
 
 	lcd.writeBitmap(fontPointBitmap, 30, y+1, 5, 1);
 	lcd.writeBitmap(fontPointBitmap, 30, y+2, 5, 1);
 
-	uint8_t secondsHi = seconds/10;
+	uint8_t secondsHi = DIV10(seconds);
 	memcpy_P(buf, fontBigNumBitmap[secondsHi], sizeof(fontBigNumBitmap[0]));
 	lcd.writeBitmap(buf, 40, y, 18, 4);
 

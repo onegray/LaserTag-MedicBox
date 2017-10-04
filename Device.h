@@ -82,8 +82,11 @@ public:
 	void turnBacklight(bool mode);
 	
 	void setRed(bool on);
+	void setGreen(bool on);
 	void setBlue(bool on);
+	void setYellow(bool on);
 	void setWhite(bool on);
+	void setColor(mlt_team_color clr);
 
 	void preventSleep(int duration);
 	bool canSleep();
