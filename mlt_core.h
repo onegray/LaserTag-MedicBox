@@ -28,20 +28,21 @@
 #ifndef MLT_CORE_H
 #define MLT_CORE_H
 
-enum mlt_command_type : char {
+enum mlt_command_type : uint8_t {
 	MLT_CT_INVALID = 0,
 	MLT_CT_SHOT = 1,
-	MLT_CT_SYSTEM = 2,
+	MLT_CT_SYSTEM = 0x83,
 };
 
-enum mlt_team_color : char {
-	MLT_ST_RED = 0,
-	MLT_ST_BLUE = 1,
-	MLT_ST_YELLOW = 2,
-	MLT_ST_GREEN = 3,
+enum mlt_team_color : uint8_t {
+	MLT_TC_INVALID = (uint8_t)-1,
+	MLT_TC_RED = 0,
+	MLT_TC_BLUE = 1,
+	MLT_TC_YELLOW = 2,
+	MLT_TC_GREEN = 3,
 };
 
-enum mlt_shot_damage : char {
+enum mlt_shot_damage : uint8_t {
 	MLT_SHOT_DAMAGE_1 = 0x00,
 	MLT_SHOT_DAMAGE_2 = 0x01,
 	MLT_SHOT_DAMAGE_4 = 0x02,
@@ -66,7 +67,7 @@ struct mlt_shot_data {
 	mlt_shot_damage damage;
 };
 
-enum mlt_system_command : char {
+enum mlt_system_command : uint8_t {
 	MLT_SC_ADMIN_KILL = 0x00,
 	MLT_SC_PAUSE = 0x01,
 	MLT_SC_START_GAME = 0x02,
@@ -89,7 +90,10 @@ struct mlt_command {
 	mlt_command_type command_type;
 	union {
 		mlt_shot_data shot_data;
-		mlt_system_command sys_cmd;
+		union {
+			mlt_system_command sys_cmd;
+			uint8_t cmd_data;
+		};
 	};
 };
 
@@ -97,6 +101,8 @@ struct mlt_command {
 void mltSetup(uint8_t emitter_pin, uint8_t sensor_pin);
 
 struct mlt_command receiveCommand();
+
+void sendCommand(mlt_command cmd);
 
 void sendSystemCommand(mlt_system_command cmd);
 

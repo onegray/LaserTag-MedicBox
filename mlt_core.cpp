@@ -177,9 +177,9 @@ struct mlt_command receiveCommand() {
 				char byte1 = scanBits(buf+8, 8);
 				char byte2 = scanBits(buf+16, 8);
 				
-				if(byte0 == (char)0x83 && byte2 == (char)0xE8) {
-					cmd.command_type = MLT_CT_SYSTEM;
-					cmd.sys_cmd = (mlt_system_command)byte1;
+				if((uint8_t)byte0 >= 0x80 && (uint8_t)byte2 == 0xE8) {
+					cmd.command_type = (mlt_command_type)byte0;
+					cmd.cmd_data = byte1;
 				}
 			}
 			
@@ -192,10 +192,21 @@ struct mlt_command receiveCommand() {
 	return cmd;
 }
 
-void sendSystemCommand(mlt_system_command cmd) {
+void sendCommand(mlt_command cmd) {
+	if (cmd.command_type == MLT_CT_SHOT) {
+		sendShotCommand(cmd.shot_data.player_id, cmd.shot_data.team_color, cmd.shot_data.damage);
+	} else {
+		sendHeader();
+		sendByte(cmd.command_type, 8);
+		sendByte(cmd.cmd_data, 8);
+		sendByte(0xE8, 8);
+	}
+}
+
+void sendSystemCommand(mlt_system_command sysCmd) {
 	sendHeader();
 	sendByte(0x83, 8);
-	sendByte(cmd, 8);
+	sendByte(sysCmd, 8);
 	sendByte(0xE8, 8);
 }
 
