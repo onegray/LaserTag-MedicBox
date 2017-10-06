@@ -74,7 +74,7 @@ public:
 			int timeLeft = (health > 0 ? shotInterval : stunTime) - elapsedTime;
 			if(timeLeft < 0) {
 				if (health > 0) {
-					shot();
+					sendCommand(cmd);
 				} else {
 					health = maxHealth;
 				}
@@ -86,14 +86,6 @@ public:
 		}
 	}
 
-	void shot() {
-		if(cmd.command_type == MLT_CT_SYSTEM) {
-			sendSystemCommand(cmd.sys_cmd);
-		} else if(cmd.command_type == MLT_CT_SHOT) {
-			sendShotCommand(cmd.shot_data.player_id, cmd.shot_data.team_color, cmd.shot_data.damage);
-		}
-	}
-	
 	void updateDisplay() {
 		if(health > 0) {
 			device->showHealthNumber(health);
@@ -175,13 +167,15 @@ public:
 			device->display.displayText(0, 2, stunBuf);
 		}
 		
-		if(mltCmd.command_type == MLT_CT_SYSTEM) {
-			char cmdText[12] = "cmd: ";
-			itoa(mltCmd.sys_cmd, cmdText+5, 10);
-			device->display.displayText(0, 3, cmdText);
+		if( mltCmd.command_type >= 0x80 ) {
+			char buf[10] = "cmd: ";
+			itoa(mltCmd.command_type, buf+5, 16);
+			device->display.displayText(0, 3, buf);
+			itoa(mltCmd.cmd_data, buf, 16);
+			device->display.displayText(45, 3, buf);
 		}
 		if(mltCmd.command_type == MLT_CT_SHOT) {
-			char shotText[16] = "clr_X, dmg_X";
+			char shotText[14] = "clr:X, dmg:X";
 			shotText[4] = 0x30 + mltCmd.shot_data.team_color;
 			shotText[11] = 0x30 + mltCmd.shot_data.damage;
 			device->display.displayText(0, 3, shotText);
