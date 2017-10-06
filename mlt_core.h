@@ -35,11 +35,11 @@ enum mlt_command_type : uint8_t {
 };
 
 enum mlt_team_color : uint8_t {
-	MLT_TC_INVALID = (uint8_t)-1,
-	MLT_TC_RED = 0,
-	MLT_TC_BLUE = 1,
-	MLT_TC_YELLOW = 2,
-	MLT_TC_GREEN = 3,
+	MLT_CLR_INVALID = (uint8_t)-1,
+	MLT_CLR_RED = 0,
+	MLT_CLR_BLUE = 1,
+	MLT_CLR_YELLOW = 2,
+	MLT_CLR_GREEN = 3,
 };
 
 enum mlt_shot_damage : uint8_t {

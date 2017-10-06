@@ -64,7 +64,7 @@ void Device::sendNewGameCommand() {
 }
 
 void Device::sendShotCommand() {
-	::sendShotCommand(0, MLT_TC_YELLOW, MLT_SHOT_DAMAGE_1);
+	::sendShotCommand(0, MLT_CLR_YELLOW, MLT_SHOT_DAMAGE_1);
 }
 
 void Device::showDeviceReady() {
@@ -199,13 +199,13 @@ void Device::setWhite(bool on) {
 }
 
 void Device::setColor(mlt_team_color clr) {
-	if (clr == MLT_TC_RED) {
+	if (clr == MLT_CLR_RED) {
 		setRed(true);
-	} else if (clr == MLT_TC_GREEN) {
+	} else if (clr == MLT_CLR_GREEN) {
 		setGreen(true);
-	} else if (clr == MLT_TC_BLUE) {
+	} else if (clr == MLT_CLR_BLUE) {
 		setBlue(true);
-	} else if (clr == MLT_TC_YELLOW) {
+	} else if (clr == MLT_CLR_YELLOW) {
 		setYellow(true);
 	} else {
 		setWhite(false);

@@ -140,7 +140,7 @@ public:
 			case ModeDominationTube:
 				return new DominationTube(device, config);
 			case ModeDominationTubeTDM:
-				return new DominationTubeTDM(device, 40);
+				return new DominationTubeTDM(device, config);
 				
 			case ModeTestStunTime:
 				return new StunTimeTest(device);

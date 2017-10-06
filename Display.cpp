@@ -26,11 +26,7 @@
 
 
 #include "Display.h"
-
-Display::Display() {
-	lcd.begin();
-	//lcd.print("Display Ready");
-}
+#include "Utils.h"
 
 
 static const PROGMEM uint8_t fontBigNumBitmap[10][4][18] =
@@ -124,6 +120,10 @@ static const PROGMEM uint8_t hitBitmap [] = {
 	0x01, 0x01, 0x03, 0x02, 0x06, 0x04, 0x0D, 0x0B, 0x1E, 0x1C, 0x38, 0x30,
 };
 
+Display::Display() {
+	lcd.begin();
+}
+
 void Display::clearScreen() {
 	lcd.clear();
 }
@@ -177,12 +177,10 @@ void Display::displayFloating(unsigned milliValue, uint8_t y) {
 	lcd.writeBitmap(fontPointBitmap, 20, y+3, 5, 1);
 }
 
-#define DIV60(x)	((x)*273/16384)
-#define DIV10(x)	((x)*205/2048)
 
 void Display::displayTime(unsigned secondsValue, uint8_t y) {
 	uint8_t buf[sizeof(fontBigNumBitmap[0])];
-	uint8_t mins = DIV60(secondsValue+1);
+	uint8_t mins = DIV60((unsigned long)(secondsValue+1));
 	uint8_t seconds = secondsValue - mins * 60;
 	
 	memcpy_P(buf, fontBigNumBitmap[mins], sizeof(fontBigNumBitmap[0]));

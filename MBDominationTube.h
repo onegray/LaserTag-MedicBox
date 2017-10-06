@@ -30,14 +30,10 @@
 
 #include "MBInterface.h"
 #include "Device.h"
+#include "Utils.h"
+
 
 #define CLAMP_2_9(x) (2+(((x)-2)%8))
-
-// Optimized divisions
-#define DIV1000(x)	((x)*131/131072)
-#define DIV500(x)	((x)*131/65536)
-#define DIV250(x)	((x)*262/65536)
-#define DIV100(x)	((x)*41/4096)
 
 static const char* colorTitles[4] = {"Red:", "Blue:", "Yellow:", "Green:"};
 
@@ -47,7 +43,7 @@ public:
 	DominationTube(Device* aDevice, ConfigurationProfile* aConfig)
 	: MedicBox(aDevice, aConfig) {
 		uint8_t value = config->getDominationTubeParam();
-		this->winTime = CLAMP_2_9(value) * 4;
+		this->winTime = CLAMP_2_9(value) * 60 * 4;
 	}
 	
 	virtual void reset() {
@@ -57,8 +53,9 @@ public:
 			savedTimes[i] = 0;
 		}
 		currentTotalTime = 0;
-		currentColor = (mlt_team_color)-1;
-		previosColor = (mlt_team_color)-1;
+		currentColor = MLT_CLR_INVALID;
+		previosColor = MLT_CLR_INVALID;
+		switchCounts = 0;
 		device->setWhite(true);
 		device->showMedicBoxReady();
 		device->showStatusText("Shot to start");
@@ -74,6 +71,7 @@ public:
 				unsigned currentTime = DIV250(millis());
 				unsigned delta = currentTime - lastSwitchTime;
 				lastSwitchTime = currentTime;
+				switchCounts++;
 
 				savedTimes[currentColor] += delta;
 				
@@ -91,7 +89,7 @@ public:
 	virtual void updateTime() {
 		static unsigned oldTime = 0;
 		unsigned currentTime = DIV250(millis());
-		if ( oldTime != currentTime && (int)currentColor != -1 ) {
+		if ( oldTime != currentTime && currentColor != MLT_CLR_INVALID ) {
 			oldTime = currentTime;
 			
 			unsigned delta = currentTime - lastSwitchTime;
@@ -101,35 +99,49 @@ public:
 				updateDisplay();
 			} else {
 				if (!isGameOver) {
+					savedTimes[currentColor] = currentTotalTime;
 					isGameOver = true;
 					device->playGameOver();
 					device->showGameOver();
+					displayResults();
 				}
 				bool on = (currentTime % 4 < 2);
-				device->setColor( on ? currentColor : (mlt_team_color)-1 );
+				device->setColor( on ? currentColor : MLT_CLR_INVALID );
 			}
-			device->preventSleep(10000);
 		}
+		device->preventSleep(10000);
 	}
 	
 	void updateDisplay() {
-		unsigned displayTime = currentTotalTime / 4;
+		unsigned displayTime = (winTime - currentTotalTime) / 4;
 		static unsigned oldDisplayTime = 0;
 		if (displayTime != oldDisplayTime) {
 			oldDisplayTime = displayTime;
 
 			device->display.clearScreen();
-
-			device->display.displayText(3, 0, colorTitles[currentColor]);
 			device->display.displayTime(displayTime, 1);
 
-			if ( (int)previosColor != -1 ) {
-				const char prevTimeText[5];
-				itoa(prevTimeText, savedTimes[previosColor], 10);
-				device->display.displayText(0, 5, colorTitles[previosColor]);
-				device->display.displayText(6, 5, prevTimeText);
+			if ( previosColor != MLT_CLR_INVALID ) {
+				const char prevTimeText[6];
+				unsigned prevTime = (winTime - savedTimes[previosColor]) / 4;
+				formatTime(prevTime, prevTimeText);
+				device->display.displayText(0, 0, prevTimeText);
 			}
 		}
+	}
+	
+	void displayResults() {
+		device->display.clearScreen();
+		for (int i=0; i<4; i++) {
+			unsigned displayTime = savedTimes[i] / 4;
+			const char timeText[6];
+			formatTime(displayTime, timeText);
+			device->display.displayText(0, i, colorTitles[i]);
+			device->display.displayText(44, i, timeText);
+		}
+		char buf[6];
+		itoa(switchCounts, buf, 10);
+		device->display.displayText(0, 5, buf);
 	}
 	
 protected:
@@ -138,6 +150,7 @@ protected:
 	unsigned savedTimes[4];
 	unsigned lastSwitchTime;
 	unsigned currentTotalTime;
+	unsigned switchCounts;
 	mlt_team_color currentColor;
 	mlt_team_color previosColor;
 };
@@ -167,6 +180,12 @@ public:
 		delay(300);
 	}
 	
+	virtual void processCommand(mlt_command* cmd) {
+		if(cmd->command_type != MLT_CT_INVALID) {
+			processButton();
+		}
+	}
+	
 	virtual void saveConfig() {
 		config->saveDominationTubeParam(value);
 	}
@@ -187,6 +206,7 @@ struct TDMParams {
 };
 
 static const TDMParams tdmParams[] = {
+	{10, 1, 30},
 	{5, 5, 30},
 	{5, 5, 40},
 	{5, 7, 30},
@@ -201,32 +221,28 @@ static const TDMParams tdmParams[] = {
 };
 
 
-class DominationTubeTDM : public MedicBox
+class DominationTubeTDM : public DominationTube
 {
 public:
 	DominationTubeTDM(Device* aDevice, ConfigurationProfile* aConfig)
-	: MedicBox(aDevice, aConfig) {
+	: DominationTube(aDevice, aConfig) {
 		uint8_t index = config->getTdmParam();
 		if (index > sizeof(tdmParams)/sizeof(tdmParams[0])) {
 			index = 0;
 		}
-		this->startDelayTime = tdmParams[index].startDelay * 4;
-		this->matchDelayTime = tdmParams[index].matchDelay * 60 * 4;
-		this->winTime = tdmParams[index].matchDuration * 4;
+		this->startDelayTime = (unsigned)tdmParams[index].startDelay * 4;
+		this->matchDelayTime = (unsigned)tdmParams[index].matchDelay * 60 * 4;
+		this->winTime = (unsigned)tdmParams[index].matchDuration * 4;
 	}
 	
 	virtual void reset() {
+		DominationTube::reset();
 		isGameStarted = false;
 		isMatchStarted = false;
 		isGameOver = false;
-		restartTime = DIV250(millis());
 		lastSwitchTime = 0;
-		currentColor = (mlt_team_color)-1;
-		previosColor = (mlt_team_color)-1;
-		device->setWhite(false);
-		device->showMedicBoxReady();
+		restartTime = DIV250(millis());
 		device->showStatusText("Not started");
-		device->preventSleep(10000);
 	}
 	
 	virtual void processButton() {
@@ -239,7 +255,9 @@ public:
 				lastSwitchTime = DIV250(millis());
 				previosColor = currentColor;
 				currentColor = cmd->shot_data.team_color;
-				updateMatchDisplay();
+				switchCounts++;
+
+				updateDisplay();
 				device->setColor(currentColor);
 				device->playConfirmBeep();
 			}
@@ -248,22 +266,20 @@ public:
 	
 	
 	virtual void updateTime() {
-		
 		static unsigned oldTime = 0;
 		unsigned currentTime = DIV250(millis());
-		
 		if ( oldTime != currentTime ) {
 			oldTime = currentTime;
 			
 			if (!isGameStarted) {
-				unsigned timeElapsed = currentTime - restartTime;
-				timeLeft = startDelayTime - timeElapsed;
+				currentTotalTime = currentTime - restartTime;
+				int timeLeft = startDelayTime - currentTotalTime;
 				
 				if ( timeLeft < 24 ) {
 					
 					prestartCountdown(timeLeft);
 					
-					if (timeElapsed >= startDelayTime) {
+					if (currentTotalTime >= startDelayTime) {
 						isGameStarted = true;
 						gameStartTime = currentTime;
 						device->playGameStarted();
@@ -271,27 +287,28 @@ public:
 					}
 				}
 				
-				if (timeElapsed % 4 == 0) {
+				if (currentTotalTime % 4 == 0) {
 					unsigned timeSeconds = timeLeft > 0 ? ((unsigned)timeLeft / 4) : 0;
 					device->display.clearScreen();
-					device->display.displayText(0, 0, " Not started ");
+					device->display.displayText(10, 0, "Not started");
 					device->display.displayTime(timeSeconds, 2);
 				}
 				
 			}
 			else if (!isMatchStarted) {
 				
-				unsigned timeElapsed = currentTime - gameStartTime;
-				timeLeft = matchDelayTime - timeElapsed;
-				
-				if ( timeLeft > 0 ) {
+				currentTotalTime = currentTime - gameStartTime;
+
+				if ( currentTotalTime < matchDelayTime ) {
 					bool on = ((currentTime/2) % 2 == 0);
 					device->setWhite(on);
 					
-					if (timeElapsed % 4 == 0) {
+					if (currentTotalTime % 4 == 0) {
+						int timeLeft = matchDelayTime - currentTotalTime;
 						unsigned timeSeconds = (unsigned)timeLeft / 4;
+
 						device->display.clearScreen();
-						device->display.displayText(0, 0, " - wait - ");
+						device->display.displayText(10, 0, "Started!");
 						device->display.displayTime(timeSeconds, 2);
 					}
 					
@@ -305,14 +322,14 @@ public:
 				
 			} else if ( lastSwitchTime != 0 ) {
 				
-				unsigned elapsed = currentTime - lastSwitchTime;
-				prevTimeLeft = timeLeft;
-				timeLeft = winTime - elapsed;
+				currentTotalTime = currentTime - lastSwitchTime;
+				savedTimes[currentColor] = currentTotalTime;
+				int timeLeft = winTime - currentTotalTime;
 				
 				if ( timeLeft > 0 ) {
 
 					finalCountdown(timeLeft);
-					updateMatchDisplay();
+					updateDisplay();
 					
 				} else {
 					
@@ -320,10 +337,11 @@ public:
 						isGameOver = true;
 						device->playGameOver();
 						device->showGameOver();
+						displayResults();
 					}
 					
 					bool on = (currentTime % 4 < 2);
-					device->setColor( on ? currentColor : (mlt_team_color)-1 );
+					device->setColor( on ? currentColor : MLT_CLR_INVALID );
 				}
 				
 			}
@@ -331,26 +349,7 @@ public:
 		}
 		
 	}
-	
-	
-	void updateMatchDisplay() {
-		unsigned displayTime = timeLeft / 4;
-		static unsigned oldDisplayTime = 0;
-		if (displayTime != oldDisplayTime) {
-			oldDisplayTime = displayTime;
-			
-			device->display.clearScreen();
-			device->display.displayText(3, 0, colorTitles[currentColor]);
-			device->display.displayTime(displayTime, 1);
-			
-			if ( (int)previosColor != -1 ) {
-				const char prevTimeText[5];
-				itoa(prevTimeText, prevTimeLeft, 10);
-				device->display.displayText(0, 5, colorTitles[previosColor]);
-				device->display.displayText(6, 5, prevTimeText);
-			}
-		}
-	}
+
 	
 	void prestartCountdown(unsigned timeLeft) {
 		uint8_t step = timeLeft / 8;
@@ -385,20 +384,14 @@ public:
 
 
 protected:
+	bool isGameStarted;
+	bool isMatchStarted;
+	
 	unsigned startDelayTime;
 	unsigned matchDelayTime;
-	unsigned winTime;
 	
 	unsigned restartTime;
 	unsigned gameStartTime;
-	unsigned lastSwitchTime;
-	int timeLeft;
-	int prevTimeLeft;
-	bool isGameStarted;
-	bool isMatchStarted;
-	bool isGameOver;
-	mlt_team_color currentColor;
-	mlt_team_color previosColor;
 };
 
 
@@ -424,23 +417,28 @@ public:
 		delay(300);
 	}
 	
+	virtual void processCommand(mlt_command* cmd) {
+		if(cmd->command_type != MLT_CT_INVALID) {
+			processButton();
+		}
+	}
+
 	virtual void saveConfig() {
 		config->saveTdmParam(index);
 	}
 	
 	void updateDisplay() {
 		device->display.clearScreen();
-
-		char buf[4];
-		itoa(buf, tdmParams[index].startDelay, 10);
-		device->display.displayText(1, 1, buf);
-		device->display.displayText(4, 1, "wait");
+		char buf[6];
+		itoa(tdmParams[index].startDelay, buf, 10);
+		device->display.displayText(0, 1, "wait:");
+		device->display.displayText(40, 1, buf);
 		
-		itoa(buf, tdmParams[index].matchDelay, 10);
-		device->display.displayText(1, 2, buf);
-		device->display.displayText(4, 2, "/");
-		itoa(buf, tdmParams[index].matchDuration, 10);
-		device->display.displayText(6, 2, buf);
+		itoa(tdmParams[index].matchDelay, buf, 10);
+		device->display.displayText(20, 3, buf);
+		device->display.displayText(30, 3, "/");
+		itoa(tdmParams[index].matchDuration, buf, 10);
+		device->display.displayText(40, 3, buf);
 	}
 };
 
