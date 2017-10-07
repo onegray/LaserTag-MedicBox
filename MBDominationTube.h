@@ -96,6 +96,10 @@ public:
 			currentTotalTime = savedTimes[currentColor] + delta;
 			
 			if ( currentTotalTime < winTime ) {
+				unsigned timeLeft = winTime - currentTotalTime;
+				if (timeLeft <= 60*4) {
+					finalCountdown(timeLeft);
+				}
 				updateDisplay();
 			} else {
 				if (!isGameOver) {
@@ -140,9 +144,26 @@ public:
 			device->display.displayText(44, i, timeText);
 		}
 		char buf[6];
-		itoa(switchCounts, buf, 10);
+		buf[0] = 'x';
+		itoa(switchCounts, buf + 1, 10);
 		device->display.displayText(0, 5, buf);
 	}
+	
+	
+	void finalCountdown(unsigned timeLeft) {
+		if (timeLeft > 30*4) {
+			if (timeLeft % 16 == 0) {
+				tone(SOUND_PIN, 500, 250);
+			}
+		} else {
+			uint8_t step = timeLeft / 16;
+			uint8_t cnt = timeLeft % 4;
+			if (!cnt || step < cnt) {
+				tone(SOUND_PIN, 500, 125);
+			}
+		}
+	}
+
 	
 protected:
 	bool isGameOver;
@@ -364,24 +385,6 @@ public:
 		}
 	}
 	
-	void finalCountdown(unsigned timeLeft) {
-		uint8_t progress = timeLeft < 45 ? (45 - timeLeft) : 0;
-		uint8_t beepRepeat = progress / 32;
-
-		static uint8_t cnt = 0;
-		cnt = (cnt + 1) % 32; // 0..31
-		
-		uint8_t beepCycleNum = cnt / 4;
-		if (beepCycleNum <= beepRepeat) {
-			uint8_t phase = cnt % 4;
-			if (phase < 2) {
-				tone(SOUND_PIN, 500);
-			} else {
-				noTone(SOUND_PIN);
-			}
-		}
-	}
-
 
 protected:
 	bool isGameStarted;
