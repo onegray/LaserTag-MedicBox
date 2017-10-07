@@ -33,12 +33,13 @@
 #define DIV500(x)	((x)*131/65536)
 #define DIV250(x)	((x)*262/65536)
 #define DIV100(x)	((x)*41/4096)
-#define DIV60(x)	((x)*273/16384)
+#define DIV60_l(x)	(((x)+1)*273/16384)
+#define DIV60(x)	(((x)+(x)/256+1)*17/1024)
 #define DIV10(x)	((x)*205/2048)
 
 
 inline char* formatTime(unsigned secondsValue, char* buf) {
-	uint8_t mins = DIV60((unsigned long)(secondsValue+1));
+	uint8_t mins = DIV60(secondsValue);
 	uint8_t seconds = secondsValue - mins * 60;
 	uint8_t secondsHi = DIV10((unsigned)seconds);
 	uint8_t secondsLow = seconds - secondsHi * 10;

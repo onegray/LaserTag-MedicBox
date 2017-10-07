@@ -180,7 +180,7 @@ void Display::displayFloating(unsigned milliValue, uint8_t y) {
 
 void Display::displayTime(unsigned secondsValue, uint8_t y) {
 	uint8_t buf[sizeof(fontBigNumBitmap[0])];
-	uint8_t mins = DIV60((unsigned long)(secondsValue+1));
+	uint8_t mins = DIV60(secondsValue);
 	uint8_t seconds = secondsValue - mins * 60;
 	
 	memcpy_P(buf, fontBigNumBitmap[mins], sizeof(fontBigNumBitmap[0]));
