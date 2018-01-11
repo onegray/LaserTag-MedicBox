@@ -35,31 +35,67 @@
 #include "MBDominationTube.h"
 #include "MBTagTest.h"
 
+
+#define MODE_SIMPLE_MEDIC           1
+#define MODE_RESP_COUNT_MEDIC       1
+#define MODE_ALIVE_MEDIC            1
+#define MODE_TEMP_MEDIC             1
+#define MODE_TEMP_ALIVE_MEDIC       1
+#define MODE_ANOMALY_POINT          1
+#define MODE_DOMINATION_TUBE        1
+#define MODE_DOMINATION_TUBE_TDM    1
+#define MODE_TEST_TAGGER            1
+
+
 class MedicBoxSubmenu;
 
 enum ModeType : char {
+
+#if MODE_SIMPLE_MEDIC
 	ModeSimpleMedic,
+#endif
+
+#if MODE_RESP_COUNT_MEDIC
 	ModeRespCountMedic,
+#endif
+
+#if MODE_ALIVE_MEDIC
 	ModeAliveMedic4,
 	ModeAliveMedic10,
-	
+#endif
+
+#if MODE_TEMP_MEDIC
 	ModeTempMedic05_3,
 	ModeTempMedic05_5,
 	ModeTempMedic1_5,
 	ModeTempMedic1_10,
+#endif
 
+#if MODE_TEMP_ALIVE_MEDIC
 	ModeTempAliveMedic2,
 	ModeTempAliveMedic3,
+#endif
 
+#if MODE_ANOMALY_POINT
 	ModeAnomalyPoint,
+#endif
 
+#if MODE_DOMINATION_TUBE
 	ModeDominationTube,
-	ModeDominationTubeTDM,
+#endif
 
+#if MODE_DOMINATION_TUBE_TDM
+	ModeDominationTubeTDM,
+#endif
+
+#if MODE_TEST_TAGGER
 	ModeTestStunTime,
 	ModeTestInvulnerabilityTime,
+#endif
+
 	ModeTypeCount,
 };
+
 
 class ModeMenu
 {
@@ -110,16 +146,25 @@ public:
 	static MedicBox* instantiateMedicBox(Device* device, ConfigurationProfile* config) {
 		ModeType mode = (ModeType) config->getMenuMode();
 		switch (mode) {
+				
+#if MODE_SIMPLE_MEDIC
 			case ModeSimpleMedic:
 				return new SimpleMedicBox(device);
+#endif
+
+#if MODE_RESP_COUNT_MEDIC
 			case ModeRespCountMedic:
 				return new RespCountMedicBox(device);
-				
+#endif
+
+#if MODE_ALIVE_MEDIC
 			case ModeAliveMedic4:
 				return new AliveMedicBox(device, 4);
 			case ModeAliveMedic10:
 				return new AliveMedicBox(device, 10);
-				
+#endif
+
+#if MODE_TEMP_MEDIC
 			case ModeTempMedic05_3:
 				return new TempMedicBox(device, 0.5*60, 3*60);
 			case ModeTempMedic05_5:
@@ -128,42 +173,65 @@ public:
 				return new TempMedicBox(device, 1*60, 5*60);
 			case ModeTempMedic1_10:
 				return new TempMedicBox(device, 1*60, 10*60);
-				
+#endif
+
+#if MODE_TEMP_ALIVE_MEDIC
 			case ModeTempAliveMedic2:
 				return new TempAliveMedicBox(device, 2*60);
 			case ModeTempAliveMedic3:
 				return new TempAliveMedicBox(device, 3*60);
+#endif
 
+#if MODE_ANOMALY_POINT
 			case ModeAnomalyPoint:
 				return new AnomalyPointMedicBox(device, config);
-				
+#endif
+
+#if MODE_DOMINATION_TUBE
 			case ModeDominationTube:
 				return new DominationTube(device, config);
+#endif
+
+#if MODE_DOMINATION_TUBE_TDM
 			case ModeDominationTubeTDM:
 				return new DominationTubeTDM(device, config);
-				
+#endif
+
+#if MODE_TEST_TAGGER
 			case ModeTestStunTime:
 				return new StunTimeTest(device);
-				
+
 			case ModeTestInvulnerabilityTime:
 				return new InvulnerabilityTimeTest(device, config);
-				
+#endif
+
 			default:
 				break;
 		}
 		return NULL;
 	}
-	
+
+
 	const char* getModeTitle(ModeType m) {
 		switch (m) {
+#if MODE_SIMPLE_MEDIC
 			case ModeSimpleMedic:
 				return "Simple";
+#endif
+
+#if MODE_RESP_COUNT_MEDIC
 			case ModeRespCountMedic:
 				return "Resp counting";
+#endif
+
+#if MODE_ALIVE_MEDIC
 			case ModeAliveMedic4:
 				return "Alive Medic   health 4";
 			case ModeAliveMedic10:
 				return "Alive Medic   health 10";
+#endif
+
+#if MODE_TEMP_MEDIC
 			case ModeTempMedic05_3:
 				return "Temp Medic       0.5/3";
 			case ModeTempMedic05_5:
@@ -172,40 +240,69 @@ public:
 				return "Temp Medic       1/5";
 			case ModeTempMedic1_10:
 				return "Temp Medic       1/10";
+#endif
+
+#if MODE_TEMP_ALIVE_MEDIC
 			case ModeTempAliveMedic2:
 				return "Temp Medic      Alive/2";
 			case ModeTempAliveMedic3:
 				return "Temp Medic      Alive/3";
+#endif
+
+#if MODE_ANOMALY_POINT
 			case ModeAnomalyPoint:
 				return "Anomaly Point *";
+#endif
+
+#if MODE_DOMINATION_TUBE
 			case ModeDominationTube:
 				return "Domination      Tube *";
+#endif
+
+#if MODE_DOMINATION_TUBE_TDM
 			case ModeDominationTubeTDM:
 				return "Domination     Tube TDM *";
+#endif
+
+#if MODE_TEST_TAGGER
 			case ModeTestStunTime:
 				return "Test Stun Time";
 			case ModeTestInvulnerabilityTime:
 				return "Test Invulnerability *";
+#endif
+
 			default:
 				break;
 		}
 		return NULL;
 	}
-	
+
 	bool instantiateSubmenu() {
 		switch (mode) {
+#if MODE_ANOMALY_POINT
 			case ModeAnomalyPoint:
 				submenu = new AnomalyPointSubmenu(device, config);
 				break;
-			case ModeTestInvulnerabilityTime:
-				submenu = new InvulnerabilityTestSubmenu(device, config);
-				break;
+#endif
+
+#if MODE_DOMINATION_TUBE
 			case ModeDominationTube:
 				submenu = new DominationTubeSubmenu(device, config);
 				break;
+#endif
+
+#if MODE_DOMINATION_TUBE_TDM
 			case ModeDominationTubeTDM:
 				submenu = new DominationTubeTDMSubmenu(device, config);
 				break;
+#endif
+
+#if MODE_TEST_TAGGER
+			case ModeTestInvulnerabilityTime:
+				submenu = new InvulnerabilityTestSubmenu(device, config);
+				break;
+#endif
+
 			default:
 				break;
 		}
