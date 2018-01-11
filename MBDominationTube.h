@@ -164,6 +164,10 @@ public:
 		}
 	}
 
+	virtual ~DominationTube() {
+		noTone(SOUND_PIN);
+		device->setWhite(false);
+	}
 	
 protected:
 	bool isGameOver;

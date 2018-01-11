@@ -45,6 +45,9 @@ public:
 		config = aConfig;
 	}
 	
+	virtual ~MedicBox() {
+	}
+	
 	virtual void reset() {
 	}
 	
