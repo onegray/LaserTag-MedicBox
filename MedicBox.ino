@@ -112,7 +112,7 @@ void loop() {
 			}
 		} else if ( IsEscCmd(cmd) ) {
 
-		} else if (btnPressed) {
+		} else if (btnPressed || IsValidCmd(cmd)) {
 			menu->changeBacklight();
 			delay(300);
 		}
