@@ -82,7 +82,8 @@ public:
 	TempMedicBox(Device* aDevice, int aliveTime, int stunTime)
 	: MedicBox(aDevice) {
 		this->aliveTime = aliveTime;
-		this->stunTime = stunTime < 10*60 ? stunTime : 10*60-1;
+		//reason for it ? TODO very strange bug with changing stun time value
+        this->stunTime = stunTime < 30*60 ? stunTime : 30*60;
 	}
 	
 	virtual void reset() {
@@ -125,7 +126,8 @@ public:
 					device->showStatusText(" Ready! ");
 				}
 			} else {
-				device->showTimeInterval(((long)timeLeft*100/60)*10, " Waiting... ");
+				// minutes left (exclude current)
+				device->showTimerNumber(timeLeft/60, " Waiting... ");
 			}
 			device->preventSleep(2000);
 		}
