@@ -130,7 +130,7 @@ public:
 				if(timeLeft > 60) {
 					device->showTimerNumber(timeLeft/60 + 1, " Waiting(min) ");
 				}
-				// second left (in last minute)
+				// seconds left (in last minute)
 				else {
 					device->showTimerNumber(timeLeft, " Waiting(sec) ");
 				}
