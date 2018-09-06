@@ -126,8 +126,14 @@ public:
 					device->showStatusText(" Ready! ");
 				}
 			} else {
-				// minutes left (exclude current)
-				device->showTimerNumber(timeLeft/60, " Waiting... ");
+				// minutes left (current minute included)
+				if(timeLeft > 60) {
+					device->showTimerNumber(timeLeft/60 + 1, " Waiting(min) ");
+				}
+				// second left (in last minute)
+				else {
+					device->showTimerNumber(timeLeft, " Waiting(sec) ");
+				}
 			}
 			device->preventSleep(2000);
 		}
