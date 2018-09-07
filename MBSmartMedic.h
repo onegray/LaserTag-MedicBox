@@ -102,8 +102,21 @@ public:
 		}
 		updateTime();
 	}
-	
+
+	/**
+	 * Send specific mlt protocol command.
+	 * Required for execute specific command via medic button.
+	 * Main target - extended S.L.K.E.R.T.A.G. support.
+	 * 
+	 * @author Anton Karasev
+	 * @param cmd mlt command
+	 */
 	virtual void processCommand(mlt_command* cmd) {
+		if(alive) {
+			sendCommand(*cmd);
+			delay(300);
+		}
+		updateTime();
 	}
 
 	virtual void updateTime() {
