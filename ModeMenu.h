@@ -71,6 +71,9 @@ enum ModeType : char {
 	ModeTempMedic1_10,
 	ModeTempMedic1_20,
 	ModeTempMedic1_30,
+	ModeTempMedicGreen1_30,
+	ModeTempMedicRed1_30,
+
 #endif
 
 #if MODE_TEMP_ALIVE_MEDIC
@@ -179,6 +182,11 @@ public:
 				return new TempMedicBox(device, 1*60, 20*60);
 			case ModeTempMedic1_30:
 				return new TempMedicBox(device, 1*60, 30*60);
+			case ModeTempMedicGreen1_30:
+				return new TempMedicBox(device, 1*60, 30*60);
+			case ModeTempMedicRed1_30:
+				return new TempMedicBox(device, 1*60, 30*60);
+
 #endif
 
 #if MODE_TEMP_ALIVE_MEDIC
@@ -250,6 +258,11 @@ public:
 				return "Temp Medic       1/20";
 			case ModeTempMedic1_30:
 				return "Temp Medic       1/30";
+			case ModeTempMedicGreen1_30:
+				return "Temp Medic Green 1/30";
+			case ModeTempMedicRed1_30:
+				return "Temp Medic Red   1/30";
+
 #endif
 
 #if MODE_TEMP_ALIVE_MEDIC
