@@ -199,7 +199,7 @@ void sendCommand(mlt_command cmd) {
 		sendHeader();
 		sendByte(cmd.command_type, 8);
 		sendByte(cmd.cmd_data, 8);
-		sendByte(0xE8, 8);
+		sendByte(cmd.package_end, 8);
 	}
 }
 
