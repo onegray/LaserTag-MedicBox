@@ -137,7 +137,18 @@ void loop() {
 				respawnCmd.cmd_data = MLT_CLR_RED;
 				respawnCmd.package_end = MLT_END_RED;
 				medic->processCommand(&respawnCmd);
-			} else {
+			} else if ((ModeType)config->getMenuMode() == ModeTempMedicBlue1_30 /* Merc base e.g. */ ) {
+				respawnCmd.command_type = MLT_CT_RESPAWN;
+				respawnCmd.cmd_data = MLT_CLR_BLUE;
+				respawnCmd.package_end = MLT_END_BLUE;
+				medic->processCommand(&respawnCmd);
+			} else if ((ModeType)config->getMenuMode() == ModeTempMedicRedTest1_01 /* Quick test */ ) {
+				respawnCmd.command_type = MLT_CT_RESPAWN;
+				respawnCmd.cmd_data = MLT_CLR_RED;
+				respawnCmd.package_end = MLT_END_RED;
+				medic->processCommand(&respawnCmd);
+			}
+			else {
 				medic->processButton();
 			}
 		} else {
