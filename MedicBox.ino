@@ -126,7 +126,31 @@ void loop() {
 		} else if ( IsValidCmd(cmd) ) {
 			medic->processCommand(&cmd);
 		} else if (btnPressed) {
-			medic->processButton();
+			mlt_command respawnCmd; // how about memory
+			if ((ModeType)config->getMenuMode() == ModeTempMedicGreen1_30 /* Freedom base e.g. */ ) {
+				respawnCmd.command_type = MLT_CT_RESPAWN;
+				respawnCmd.cmd_data = MLT_CLR_GREEN;
+				respawnCmd.package_end = MLT_END_GREEN;
+				medic->processCommand(&respawnCmd);
+			} else if ((ModeType)config->getMenuMode() == ModeTempMedicRed1_30 /* Dept base e.g. */ ) {
+				respawnCmd.command_type = MLT_CT_RESPAWN;
+				respawnCmd.cmd_data = MLT_CLR_RED;
+				respawnCmd.package_end = MLT_END_RED;
+				medic->processCommand(&respawnCmd);
+			} else if ((ModeType)config->getMenuMode() == ModeTempMedicBlue1_30 /* Merc base e.g. */ ) {
+				respawnCmd.command_type = MLT_CT_RESPAWN;
+				respawnCmd.cmd_data = MLT_CLR_BLUE;
+				respawnCmd.package_end = MLT_END_BLUE;
+				medic->processCommand(&respawnCmd);
+			} else if ((ModeType)config->getMenuMode() == ModeTempMedicRedTest1_01 /* Quick test */ ) {
+				respawnCmd.command_type = MLT_CT_RESPAWN;
+				respawnCmd.cmd_data = MLT_CLR_RED;
+				respawnCmd.package_end = MLT_END_RED;
+				medic->processCommand(&respawnCmd);
+			}
+			else {
+				medic->processButton();
+			}
 		} else {
 			medic->updateTime();
 		}

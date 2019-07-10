@@ -82,7 +82,8 @@ public:
 	TempMedicBox(Device* aDevice, int aliveTime, int stunTime)
 	: MedicBox(aDevice) {
 		this->aliveTime = aliveTime;
-		this->stunTime = stunTime < 10*60 ? stunTime : 10*60-1;
+		//reason for it ? TODO very strange bug with changing stun time value
+        this->stunTime = stunTime < 30*60 ? stunTime : 30*60;
 	}
 	
 	virtual void reset() {
@@ -101,8 +102,21 @@ public:
 		}
 		updateTime();
 	}
-	
+
+	/**
+	 * Send specific mlt protocol command.
+	 * Required for execute specific command via medic button.
+	 * Main target - extended S.L.K.E.R.T.A.G. support.
+	 * 
+	 * @author Anton Karasev
+	 * @param cmd mlt command
+	 */
 	virtual void processCommand(mlt_command* cmd) {
+		if(alive) {
+			sendCommand(*cmd);
+			delay(300);
+		}
+		updateTime();
 	}
 
 	virtual void updateTime() {
@@ -125,7 +139,14 @@ public:
 					device->showStatusText(" Ready! ");
 				}
 			} else {
-				device->showTimeInterval(((long)timeLeft*100/60)*10, " Waiting... ");
+				// minutes left (current minute included)
+				if(timeLeft > 60) {
+					device->showTimerNumber(timeLeft/60 + 1, " Waiting(min) ");
+				}
+				// seconds left (in last minute)
+				else {
+					device->showTimerNumber(timeLeft, " Waiting(sec) ");
+				}
 			}
 			device->preventSleep(2000);
 		}

@@ -32,6 +32,7 @@ enum mlt_command_type : uint8_t {
 	MLT_CT_INVALID = 0,
 	MLT_CT_SHOT = 1,
 	MLT_CT_SYSTEM = 0x83,
+    MLT_CT_RESPAWN = 0xB4,//0xA9,
 };
 
 enum mlt_team_color : uint8_t {
@@ -86,8 +87,25 @@ enum mlt_system_command : uint8_t {
 	MLT_SC_DOUBLE_HEALTH = 0x22,	// LW extension
 };
 
+/**
+ * LASERWAR protocol supports different package ends.
+ * Current values received from LW tech director https://vk.com/sempertenebris
+ */
+enum mlt_package_end : uint8_t {
+	MLT_END_COMMON = 0xE8,
+	MLT_END_RED = 0xB4,
+	MLT_END_BLUE = 0xB5,
+	MLT_END_YELLOW = 0xB6,
+	MLT_END_GREEN = 0xB7,
+};
+
 struct mlt_command {
+
+	/**
+	 * First byte
+	 */
 	mlt_command_type command_type;
+
 	union {
 		mlt_shot_data shot_data;
 		union {
@@ -95,8 +113,12 @@ struct mlt_command {
 			uint8_t cmd_data;
 		};
 	};
-};
 
+	/**
+	 * Last byte, MLT_END_COMMON (0xE8) by default, c++ 11 feature
+	 */
+	mlt_package_end package_end = mlt_package_end::MLT_END_COMMON;
+};
 
 void mltSetup(uint8_t emitter_pin, uint8_t sensor_pin);
 

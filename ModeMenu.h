@@ -69,6 +69,12 @@ enum ModeType : char {
 	ModeTempMedic05_5,
 	ModeTempMedic1_5,
 	ModeTempMedic1_10,
+	ModeTempMedic1_20,
+	ModeTempMedic1_30,
+	ModeTempMedicGreen1_30,
+	ModeTempMedicRed1_30,
+	ModeTempMedicBlue1_30,
+	ModeTempMedicRedTest1_01,
 #endif
 
 #if MODE_TEMP_ALIVE_MEDIC
@@ -173,6 +179,19 @@ public:
 				return new TempMedicBox(device, 1*60, 5*60);
 			case ModeTempMedic1_10:
 				return new TempMedicBox(device, 1*60, 10*60);
+			case ModeTempMedic1_20:
+				return new TempMedicBox(device, 1*60, 20*60);
+			case ModeTempMedic1_30:
+				return new TempMedicBox(device, 1*60, 30*60);
+			case ModeTempMedicGreen1_30:
+				return new TempMedicBox(device, 1*60, 30*60);
+			case ModeTempMedicRed1_30:
+				return new TempMedicBox(device, 1*60, 30*60);
+			case ModeTempMedicBlue1_30:
+				return new TempMedicBox(device, 1*60, 30*60);
+			//Test mode for quick test compatibility with colored respawn
+			case ModeTempMedicRedTest1_01:
+				return new TempMedicBox(device, 1*60, 1);
 #endif
 
 #if MODE_TEMP_ALIVE_MEDIC
@@ -240,6 +259,18 @@ public:
 				return "Temp Medic       1/5";
 			case ModeTempMedic1_10:
 				return "Temp Medic       1/10";
+			case ModeTempMedic1_20:
+				return "Temp Medic       1/20";
+			case ModeTempMedic1_30:
+				return "Temp Medic       1/30";
+			case ModeTempMedicGreen1_30:
+				return "Temp Medic Green 1/30";
+			case ModeTempMedicRed1_30:
+				return "Temp Medic Red   1/30";
+			case ModeTempMedicBlue1_30:
+				return "Temp Medic Blue  1/30";
+			case ModeTempMedicRedTest1_01:
+				return "Temp Medic Red   1/01";
 #endif
 
 #if MODE_TEMP_ALIVE_MEDIC

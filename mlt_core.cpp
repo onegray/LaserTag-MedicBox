@@ -31,7 +31,7 @@
 // half cycle period:   T/2 = 8.93 µs
 
 // assuming carrier_interval_delay + instructions_delay = T/2
-#define CARRIER_INTERVAL	4		// adjusted experimentally
+#define CARRIER_INTERVAL	5		// adjusted experimentally
 
 
 // MilesTag definitions
@@ -199,7 +199,7 @@ void sendCommand(mlt_command cmd) {
 		sendHeader();
 		sendByte(cmd.command_type, 8);
 		sendByte(cmd.cmd_data, 8);
-		sendByte(0xE8, 8);
+		sendByte(cmd.package_end, 8);
 	}
 }
 
